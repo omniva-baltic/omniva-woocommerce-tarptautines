@@ -1,0 +1,24 @@
+{
+    "name": "mijora/omniva-tarptautines-woo",
+    "type": "wordpress-module",
+    "autoload": {
+        "psr-4": {
+            "OmnivaTarptautinesWoo\\": "classes/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mijora",
+            "email": "info@mijora.lt"
+        }
+    ],
+    "require": {
+        "omniva/api-lib" : "dev-master"
+    },
+    "repositories": [
+        {
+            "type" : "vcs",
+            "url" : "git@github.com:mijora/omniva-api.git"
+        }
+    ]
+}

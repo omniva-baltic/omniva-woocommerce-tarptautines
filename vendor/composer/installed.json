@@ -1,0 +1,44 @@
+{
+    "packages": [
+        {
+            "name": "omniva/api-lib",
+            "version": "dev-master",
+            "version_normalized": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:mijora/omniva-api.git",
+                "reference": "baa5aa2d7256dc3d46e7bae48a9f8fddf1c05499"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mijora/omniva-api/zipball/baa5aa2d7256dc3d46e7bae48a9f8fddf1c05499",
+                "reference": "baa5aa2d7256dc3d46e7bae48a9f8fddf1c05499",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*"
+            },
+            "time": "2021-12-29T12:43:14+00:00",
+            "default-branch": true,
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "OmnivaApi\\": "src/"
+                }
+            },
+            "license": [
+                "#"
+            ],
+            "description": "library for Omniva api",
+            "support": {
+                "source": "https://github.com/mijora/omniva-api/tree/master",
+                "issues": "https://github.com/mijora/omniva-api/issues"
+            },
+            "install-path": "../omniva/api-lib"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}
