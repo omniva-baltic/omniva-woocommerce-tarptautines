@@ -62,9 +62,10 @@ ul.omniva-global-services label {
 }
 .omniva-loader {
     margin: 0px auto;
-    margin-top: calc(50% - 36px);
+    top: calc(50% - 36px);
+    left: calc(50% - 36px);
     font-size: 10px;
-    position: relative;
+    position: absolute;
     text-indent: -9999em;
     border-top: 1.1em solid rgba(255, 255, 255, 0.2);
     border-right: 1.1em solid rgba(255, 255, 255, 0.2);
