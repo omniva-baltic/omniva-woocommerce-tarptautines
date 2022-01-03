@@ -41,7 +41,8 @@ class Core {
 
     public function get_sender() {
         $config = $this->get_config();
-        $send_off = $config['send_off'];
+        //$send_off = $config['send_off'];
+        $send_off = 'courier';
 
         $sender = new Sender($send_off);
         $sender->setCompanyName($config['company']);
@@ -56,7 +57,8 @@ class Core {
 
     public function get_receiver($package) {
         $config = $this->get_config();
-        $send_off = $config['send_off'];
+        //$send_off = $config['send_off'];
+        $send_off = 'courier';
 
         if (is_array($package)) {
             //create from array at checkout
@@ -67,7 +69,7 @@ class Core {
             $receiver->setZipcode($package['destination']['postcode']);
             $receiver->setCity($package['destination']['city']);
             $receiver->setCountryId($this->get_country_id($package['destination']['country']));
-            $receiver->setPhoneNumber(WC()->checkout->get_value('shipping_phone') ?? WC()->checkout->get_value('billing_phone'));
+            $receiver->setPhoneNumber((string) WC()->checkout->get_value('shipping_phone') ?? WC()->checkout->get_value('billing_phone'));
             return $receiver;
         } elseif (is_object($package)) {
             //create from object on order
@@ -78,7 +80,7 @@ class Core {
             $receiver->setZipcode($package->get_shipping_postcode());
             $receiver->setCity($package->get_shipping_city());
             $receiver->setCountryId($this->get_country_id($package->get_shipping_country()));
-            $receiver->setPhoneNumber($package->get_billing_phone());
+            $receiver->setPhoneNumber((string)$package->get_billing_phone());
             return $receiver;
         }
 
