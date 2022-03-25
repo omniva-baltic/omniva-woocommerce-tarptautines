@@ -50,15 +50,23 @@ class Product {
         return $length ? $length : false;
     }
     
+    public function get_virtual($product){
+        $is_virtual = $product->get_virtual();
+        if (!$is_virtual) {
+            $is_virtual = $this->get_param_from_cat($product, 'virtual');
+        }
+        return $is_virtual ? $is_virtual : false;
+    }
+    
     
     private function get_param_from_cat($product, $param) {
-        if (isset($product_terms[$product->get_id()])) {
-            $terms = $product_terms[$product->get_id()];
+        if (isset($this->product_terms[$product->get_id()])) {
+            $terms = $this->product_terms[$product->get_id()];
         } else {
             $terms = get_the_terms( $product->get_id(), 'product_cat' );
             if (is_array($terms)) {
                 $terms = $this->order_term_hierarchy($terms);
-                $product_terms[$product->get_id()] = $terms;
+                $this->product_terms[$product->get_id()] = $terms;
             } else {
                 return $this->get_param_from_config($param);
             }
@@ -80,8 +88,8 @@ class Product {
         $ordered = [];
         foreach ($terms as $term){
             if ($term->parent == $parent) {
-                $ordered = $term;
-                array_merge($terms, $term->term_id);
+                $ordered[] = $term;
+                array_merge($terms, [$term->term_id]);
             }
         }
         return $ordered;

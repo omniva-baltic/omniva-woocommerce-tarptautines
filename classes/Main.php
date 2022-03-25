@@ -37,10 +37,11 @@ class Main {
         add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'front_scripts'), 99);
         add_action('woocommerce_after_shipping_rate', array($this, 'omniva_show_terminals'));
-        add_action('wp_footer', array($this, 'footer_modal'));
+        //add_action('wp_footer', array($this, 'footer_modal'));
         add_action('omniva_global_event', array($this, 'omniva_global_event_callback_function'));
         add_filter('cron_schedules', array($this, 'cron_add_5min'));
         add_action('woocommerce_checkout_process', array($this, 'omniva_terminal_validate'));
+        add_action( 'wp_ajax_omniva_terminals_sync', array($this, 'omniva_update_terminals'));
 
         if (get_option(Helper::get_prefix() . '_services_updated', 0) == 1) {
             add_action('admin_notices', array($this, 'updated_services_notice'));
@@ -48,30 +49,32 @@ class Main {
     }
 
     public function front_scripts() {
-        if (is_cart() || is_checkout()) {
+        if (is_checkout() && ! is_wc_endpoint_url()) {
 
-            wp_enqueue_script('omniva-helper', plugin_dir_url(__DIR__) . 'assets/js/omniva_helper.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
-            wp_enqueue_script('omniva', plugin_dir_url(__DIR__) . 'assets/js/omniva.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-global-helper', plugin_dir_url(__DIR__) . 'assets/js/omniva_helper.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-global', plugin_dir_url(__DIR__) . 'assets/js/omniva.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-terminal', plugin_dir_url(__DIR__) . 'assets/js/terminal.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
 
-            wp_enqueue_style('omniva', plugin_dir_url(__DIR__) . 'assets/css/omniva.css', array(), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_style('omniva-global', plugin_dir_url(__DIR__) . 'assets/css/terminal-mapping.css', array(), OMNIVA_GLOBAL_VERSION);
 
-            wp_enqueue_script('leaflet', plugin_dir_url(__DIR__) . 'assets/js/leaflet.js', array('jquery'), null, true);
-            wp_enqueue_style('leaflet', plugin_dir_url(__DIR__) . 'assets/css/leaflet.css');
+            //wp_enqueue_script('leaflet', plugin_dir_url(__DIR__) . 'assets/js/leaflet.js', array('jquery'), null, true);
+            //wp_enqueue_style('leaflet', plugin_dir_url(__DIR__) . 'assets/css/leaflet.css');
 
-            wp_localize_script('omniva', 'omnivadata', array(
+            wp_localize_script('omniva-global', 'omnivaglobaldata', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'omniva_plugin_url' => plugin_dir_url(__DIR__),
                 'text_select_terminal' => __('Select terminal', 'omniva_global'),
                 'text_select_post' => __('Select post office', 'omniva_global'),
                 'text_search_placeholder' => __('Enter postcode', 'omniva_global'),
-                'not_found' => __('Place not found', 'omniva_global'),
+                'text_not_found' => __('Place not found', 'omniva_global'),
                 'text_enter_address' => __('Enter postcode/address', 'omniva_global'),
-                'text_show_in_map' => __('Show in map', 'omniva_global'),
-                'text_show_more' => __('Show more', 'omniva_global'),
-                'text_modal_title_terminal' => __('Omniva parcel terminals', 'omniva_global'),
-                'text_modal_search_title_terminal' => __('Parcel terminals addresses', 'omniva_global'),
-                'text_modal_title_post' => __('Omniva post offices', 'omniva_global'),
-                'text_modal_search_title_post' => __('Post offices addresses', 'omniva_global'),
+                'text_map' => __('Terminals map', 'omniva_global'),
+                'text_list' => __('Terminals list', 'omniva_global'),
+                'text_search' => __('Search', 'omniva_global'),
+                'text_reset' => __('Reset search', 'omniva_global'),
+                'text_select' => __('Select', 'omniva_global'),
+                'text_no_city' => __('City not found', 'omniva_global'),
+                'text_my_loc' => __('Use my location', 'omniva_global'),
             ));
         }
     }
@@ -82,6 +85,10 @@ class Main {
 
         wp_register_script('omniva_global_settings_js', plugin_dir_url(__DIR__) . 'assets/js/settings.js', array('jquery'), OMNIVA_GLOBAL_VERSION, true);
         wp_enqueue_script('omniva_global_settings_js');
+        
+        wp_localize_script('omniva_global_settings_js', 'omnivadata', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+        ));
 
         $current_page = get_current_screen()->base;
         if ($current_page == 'post') {
@@ -103,6 +110,9 @@ class Main {
     public function omniva_show_terminals($method) {
         $customer = WC()->session->get('customer');
         $country = "ALL";
+        if (!isset($_POST['country'])) {
+            return;
+        }
         if (isset($customer['shipping_country'])) {
             $country = $customer['shipping_country'];
         } elseif (isset($customer['country'])) {
@@ -121,129 +131,32 @@ class Main {
 
         if (!empty($selected_shipping_method) && stripos($selected_shipping_method[0], 'omniva_global_terminal_') !== false && stripos($method->id, 'omniva_global_terminal_') !== false) {
             $identifier = $this->core->get_identifier_form_method($method->id);
-            echo $this->omniva_get_terminal_options($termnal_id, $country, $identifier);
+            echo $this->omniva_get_terminal_options($method->id, $termnal_id, $country, $identifier);
         }
     }
 
-    public function omniva_get_terminal_options($selected = '', $country = "ALL", $identifier = 'omniva') {
+    public function omniva_get_terminal_options($method_id, $selected = '', $country = "ALL", $identifier = 'omniva') {
         //$country = "ALL";
 
-        $terminals = $this->api->get_terminals();
-        $terminals = $terminals->parcel_machines ?? [];
-        $parcel_terminals = '';
-        if (is_array($terminals)) {
-            $grouped_options = array();
-            foreach ($terminals as $terminal) {
-                /*
-                  if (($get_list === 'terminal' && intval($terminal['TYPE']) === 1) || ($get_list === 'post' && intval($terminal['TYPE']) === 0)) {
-                  continue;
-                  } */
-                if ($terminal->country_code != $country && $country != "ALL") {
-                    continue;
-                }
-                if ($terminal->identifier != $identifier) {
-                    continue;
-                }
-                if (!isset($grouped_options[$terminal->city])) {
-                    $grouped_options[(string) $terminal->city] = array();
-                }
-                $grouped_options[(string) $terminal->city][(string) $terminal->id] = $terminal->name;
-            }
-            $counter = 0;
-            foreach ($grouped_options as $city => $locs) {
-                $parcel_terminals .= '<optgroup data-id = "' . $counter . '" label = "' . $city . '">';
-                foreach ($locs as $key => $loc) {
-                    $parcel_terminals .= '<option value = "' . $key . '" ' . ($key == $selected ? 'selected' : '') . '>' . $loc . '</option>';
-                }
-
-                $parcel_terminals .= '</optgroup>';
-                $counter++;
-            }
-        }
-        $nonce = wp_create_nonce("omniva_terminals_json_nonce");
         $omniva_settings = $this->core->get_config();
-        $parcel_terminals = '<option value = "">' . __('Select parcel terminal', 'omniva_global') . '</option>' . $parcel_terminals;
         $set_autoselect = (isset($omniva_settings['auto_select']) && $omniva_settings['auto_select'] == 'yes') ? 'true' : 'false';
         $max_distance = (isset($omniva_settings['terminal_distance'])) ? $omniva_settings['terminal_distance'] : '2';
+       
         $script = "<script style='display:none;'>
-      var omnivaTerminals = JSON.stringify(" . json_encode($this->get_terminal_for_map('', $country, $identifier)) . ");
-    </script>";
-        $script .= "<script style='display:none;'>
-      var omniva_current_country = '" . $country . "';
-      var omnivaSettings = {
-        auto_select:" . $set_autoselect . ",
-        max_distance:" . $max_distance . "
-      };
-      var omniva_type = 'terminal';
-      var omniva_current_terminal = '" . $selected . "';
-      jQuery('document').ready(function($){        
-        $('.omniva_global_terminal').omniva_global();
-        $(document).trigger('omnivalt.checkpostcode');
-      });
-      </script>";
-        $button = '';
-        if (!isset($omniva_settings['show_map']) || isset($omniva_settings['show_map']) && $omniva_settings['show_map'] == "yes") {
-            $title = __("Show parcel terminals map", "omniva_global");
-            $button = '<button type="button" id="show-omniva-map" class="btn btn-basic btn-sm omniva-btn" style = "display: none;">' . __('Show in map', 'omniva_global') . '<img src = "' . plugin_dir_url(__DIR__) . 'assets/images/sasi.png" title = "' . $title . '"/></button>';
-        }
-        return '<div class="terminal-container"><select class="omniva_global_terminal" name="omniva_global_terminal">' . $parcel_terminals . '</select>
-      ' . $button . ' </div>' . $script;
-    }
-
-    public function get_terminal_for_map($selected = '', $country = "ALL", $identifier = 'omniva') {
-        $terminals = $this->api->get_terminals();
-        $terminals = $terminals->parcel_machines ?? [];
-        $terminalsList = array();
-        //$comment_lang = (!empty($shipping_params[strtoupper($country)]['comment_lang'])) ? $shipping_params[strtoupper($country)]['comment_lang'] : 'lit';
-        if (is_array($terminals)) {
-            foreach ($terminals as $terminal) {
-                if ($terminal->country_code != $country && $country != "ALL") { //TO DO: filter by type
-                    continue;
-                }
-                if ($terminal->identifier != $identifier) {
-                    continue;
-                }
-                $terminalsList[] = [$terminal->name, $terminal->y_cord, $terminal->x_cord, $terminal->id, $terminal->address, '', ''];
-            }
-        }
-        return $terminalsList;
-    }
-
-    public function footer_modal() {
-        if (is_cart() || is_checkout()) {
-            echo $this->terminals_modal();
-        }
-    }
-
-    private function terminals_modal() {
-        return '
-        <div id="omnivaLtModal" class="modal">
-            <div class="omniva-modal-content">
-                <div class="omniva-modal-header">
-                <span class="close" id="terminalsModal">&times;</span>
-                <h5 id="omnivaLt_modal_title" style="display: inline">' . __('Omniva parcel terminals', 'omniva_global') . '</h5>
-                </div>
-                <div class="omniva-modal-body" style="/*overflow: hidden;*/">
-                    <div id = "omnivaMapContainer"></div>
-                    <div class="omniva-search-bar" >
-                        <h4 id="omnivaLt_modal_search" style="margin-top: 0px;">' . __('Parcel terminals addresses', 'omniva_global') . '</h4>
-                        <div id="omniva-search">
-                        <form>
-                        <input type = "text" placeholder = "' . __('Enter postcode', 'omniva_global') . '"/>
-                        <button type = "submit" id="map-search-button"></button>
-                        </form>                    
-                        <div class="omniva-autocomplete scrollbar" style = "display:none;"><ul></ul></div>
-                        </div>
-                        <div class = "omniva-back-to-list" style = "display:none;">' . __('Back', 'omniva_global') . '</div>
-                        <div class="found_terminals scrollbar" id="style-8">
-                          <ul>
-
-                          </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>';
+        var omnivaSettings = {
+          auto_select:" . $set_autoselect . ",
+          max_distance:" . $max_distance . ",
+          identifier: '{$identifier}' ,
+          country: '{$country}' ,
+          api_url: '".$omniva_settings['api_url']."',    
+        };
+        var omniva_current_terminal = '" . $selected . "';
+        var omnivaint_terminal_reference = '{$method_id}';
+        jQuery('document').ready(function($){     
+          $('body').trigger('load-omniva-terminals');
+        });
+        </script>";
+        return '<div id="omniva_global_map_container"></div><input type = "hidden" name="omniva_global_terminal"/>'.$script;//<div class="terminal-container"><select class="omniva_global_terminal" name="omniva_global_terminal">' . $parcel_terminals . '</select>      ' . $button . ' </div>' . $script;
     }
 
     public function updated_services_notice() {
@@ -257,6 +170,7 @@ class Main {
 
     public static function activated() {
         wp_schedule_event(time(), '5min', 'omniva_global_event');
+        self::create_terminals_table();
     }
 
     public static function deactivated() {
@@ -301,6 +215,33 @@ class Main {
             }
         }
     }
+    
+    public static function create_terminals_table() {      
+        global $wpdb; 
+        $db_table_name = $wpdb->prefix . 'omniva_global_terminals';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        if($wpdb->get_var( "show tables like '$db_table_name'" ) != $db_table_name ) {
+              $sql = "CREATE TABLE $db_table_name (
+                       id int(11) NOT NULL auto_increment,
+                       name varchar(255) NOT NULL,
+                       city varchar(255) NOT NULL,
+                       country_code varchar(10) NOT NULL,
+                       address varchar(255) NOT NULL,
+                       zip varchar(50) NOT NULL,
+                       x_cord varchar(20) NOT NULL,
+                       y_cord varchar(20) NOT NULL,
+                       comment varchar(255) NOT NULL,
+                       identifier varchar(50) NOT NULL,
+                       UNIQUE KEY id (id)
+               ) $charset_collate;";
+
+          require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+          dbDelta( $sql );
+          add_option( $db_table_name, OMNIVA_GLOBAL_VERSION );
+        }
+    } 
+
 
     public function omniva_terminal_validate() {
         if (isset($_POST['shipping_method'])) {
@@ -310,6 +251,17 @@ class Main {
                 }
             }
         }
+    }
+    
+ 
+    public function omniva_update_terminals() {
+        $this->api->update_terminals();
+        $array_result = array(
+            'message' => 'Updated'
+        );
+
+        wp_send_json($array_result);
+        wp_die();
     }
 
 }

@@ -191,31 +191,48 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'description' => __('Select how many services will be visible in checkout', 'omniva_global'),
                 'default' => '1'
             );
-
+            
             $services = $this->api->get_services();
             if (is_array($services)) {
+                $service_groups = [];
                 foreach ($services as $service) {
-                    $fields['service_' . $service->service_code] = array(
-                        'title' => $service->name,
-                        'type' => 'checkbox',
-                        'description' => __(sprintf('Show %s service', $service->name), 'omniva_global'),
-                        'class' => 'has-depends'
+                    $group_name = $service->service_type;
+                    if ($service->delivery_to_address == false) {
+                        $group_name = __('Parcel terminals', 'omniva_global');
+                    }
+                    if (!isset($service_groups[$group_name])) {
+                        $service_groups[$group_name] = [];
+                    }
+                    $service_groups[$group_name][] = $service;
+                }    
+                foreach ($service_groups as $group_name => $group_services) {
+                    $fields['fieldset_start_'.$group_name] = array(
+                        'type' => 'fieldset_start',
+                        'label' => $group_name
                     );
-                    if ($this->core->has_own_login($service)) {
-                        $fields['service_' . $service->service_code . '_own_login_user'] = array(
-                            'title' => __('Own login user', 'omniva_global'),
-                            'type' => 'text',
-                            'custom_attributes' => array(
-                                'data-depends' => 'woocommerce_' . Helper::get_prefix() . '_service_' . $service->service_code
-                            ),
+                    foreach ($group_services as $service) {
+                        $fields['service_' . $service->service_code] = array(
+                            'title' => $service->name,
+                            'type' => 'checkbox',
+                            'description' => __(sprintf('Show %s service', $service->name), 'omniva_global'),
+                            'class' => 'has-depends'
                         );
-                        $fields['service_' . $service->service_code . '_own_login_password'] = array(
-                            'title' => __('Own login password', 'omniva_global'),
-                            'type' => 'text',
-                            'custom_attributes' => array(
-                                'data-depends' => 'woocommerce_' . Helper::get_prefix() . '_service_' . $service->service_code
-                            ),
-                        );
+                        if ($this->core->has_own_login($service)) {
+                            $fields['service_' . $service->service_code . '_own_login_user'] = array(
+                                'title' => __('Own login user', 'omniva_global'),
+                                'type' => 'text',
+                                'custom_attributes' => array(
+                                    'data-depends' => 'woocommerce_' . Helper::get_prefix() . '_service_' . $service->service_code
+                                ),
+                            );
+                            $fields['service_' . $service->service_code . '_own_login_password'] = array(
+                                'title' => __('Own login password', 'omniva_global'),
+                                'type' => 'text',
+                                'custom_attributes' => array(
+                                    'data-depends' => 'woocommerce_' . Helper::get_prefix() . '_service_' . $service->service_code
+                                ),
+                            );
+                        }
                     }
                 }
             }
@@ -338,7 +355,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     'data-name' => 'restricted_categories'
                 ),
             );
-            
+            /*
             $fields['show_map'] = array(
                 'title' => __('Map', 'omniva_global'),
                 'type' => 'checkbox',
@@ -346,13 +363,14 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'default' => 'yes',
                 'class' => 'omniva_terminal'
             );
+            
             $fields['auto_select'] = array(
                 'title' => __('Automatic terminal selection', 'omniva_global'),
                 'type' => 'checkbox',
                 'description' => __('Automatically select terminal by postcode.', 'omniva_global'),
                 'default' => 'yes',
                 'class' => 'omniva_terminal'
-            );
+            );*/
             $fields['terminal_distance'] = array(
                 'title' => __('Max terminal distance from receiver, km', 'omniva_global'),
                 'type' => 'number',
@@ -363,12 +381,28 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'default' => 2
             );
             
+            $fields['refresh_terminals'] = array(
+                'title' => __('Update terminals database', 'omniva_global'),
+                'type' => 'sync_button',
+            );
+            
             $this->form_fields = $fields;
         }
 
         public function generate_hr_html($key, $value) {
             $class = (isset($value['class'])) ? $value['class'] : '';
             $html = '<tr valign="top"><td colspan="2"><hr class="' . $class . '"></td></tr>';
+            return $html;
+        }
+        
+        public function generate_sync_button_html($key, $value) {
+            $class = (isset($value['class'])) ? $value['class'] : '';
+            $html = '<tr valign="top"><th>'.($value['title'] ?? '').'</th><td colspan=""><button type = "button" class = "button-primary terminals-sync-btn">'.__('Update', 'omniva_global').'</button></td></tr>';
+            return $html;
+        }
+        
+        public function generate_fieldset_start_html($key, $value) {
+            $html = '<tr valign="top"><td colspan="2" class="service-group-title">' . ($value['label'] ?? "") . '</td></tr>';
             return $html;
         }
 
@@ -416,7 +450,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 $services_limit = $config['services_limit'] ?? 1;
                 $courier_title = $config['courier_title'] ?? 'Courier';
                 $terminal_title = $config['terminal_title'] ?? 'Terminal';
-
+                
                 $offers = $this->core->filter_enabled_offers($this->core->get_offers($package));
                 $this->core->sort_offers($offers);
                 $this->core->set_offers_price($offers);
@@ -426,7 +460,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
 
                 //var_dump($offers);
                 $current_service = 0;
-                if (isset($config['courier_enable']) && isset($config['courier_enable']) == 'yes' && (!$config['weight_c'] || $config['weight_c'] > $cart_weight )) {
+                if (isset($config['courier_enable']) && $config['courier_enable'] == 'yes' && (!$config['weight_c'] || $config['weight_c'] > $cart_weight )) {
                     foreach ($offers as $offer) {
                         if ($this->core->is_offer_terminal($offer)) {
                             continue;
@@ -444,7 +478,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     }
                 }
 
-                if (isset($config['terminal_enable']) && isset($config['terminal_enable']) == 'yes' && (!$config['weight'] || $config['weight'] > $cart_weight )) {
+                if (isset($config['terminal_enable']) && $config['terminal_enable'] == 'yes' && (!$config['weight'] || $config['weight'] > $cart_weight )) {
                     foreach ($offers as $offer) {
                         if (!$this->core->is_offer_terminal($offer)) {
                             continue;

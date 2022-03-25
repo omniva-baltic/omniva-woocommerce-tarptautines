@@ -8,5 +8,21 @@ jQuery(document).ready(function($){
         }
     });
     $('.has-depends').trigger('change');
+    
+    $('button.terminals-sync-btn').on('click', function() {
+        var btn = $(this);
+        btn.addClass('loading').prop('disabled', true);
+        jQuery.post(
+            omnivadata.ajax_url, 
+            {
+                'action': 'omniva_terminals_sync'
+            }, 
+            function(response) {
+                
+            }
+        ).always(function() {
+            btn.removeClass('loading').prop('disabled', false);
+        });
+    });
 });
 

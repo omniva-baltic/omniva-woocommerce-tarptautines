@@ -7,9 +7,10 @@ use OmnivaApi\Exception\ValidationException;
 
 class API
 {
-    protected $url = "https://tarptautines.mijora.lt/api/v1/";
+    protected $url = "https://tarptautines.omniva.lt/api/v1/";
     protected $token;
     private $debug_mode;
+    private $timeout = 5;
 
     public function __construct($token = false, $test_mode = false, $api_debug_mode = false)
     {
@@ -35,12 +36,19 @@ class API
         return $this;
     }
 
-  public function setUrl($url)
-  {
-    $this->url = $url;
+    public function setUrl($url)
+    {
+      $this->url = $url;
 
-    return $this;
-  }
+      return $this;
+    }
+    
+    public function setTimeout($timeout)
+    {
+      $this->timeout = $timeout;
+
+      return $this;
+    }
 
     private function callAPI($url, $data = [])
     {
@@ -51,14 +59,12 @@ class API
             "Authorization: Bearer " . $this->token
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
         if ($data) {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
-
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 
         $response = curl_exec($ch);
 

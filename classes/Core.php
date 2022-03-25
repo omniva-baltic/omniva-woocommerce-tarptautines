@@ -107,6 +107,9 @@ class Core {
                 $_product = $data['data'];
                 $parcel->setAmount($data['quantity']);
             }
+            if ($product->get_virtual($_product)) {
+                continue;
+            }
             $parcel->setUnitWeight($product->get_weight($_product));
             $parcel->setHeight($product->get_height($_product));
             $parcel->setWidth($product->get_width($_product));

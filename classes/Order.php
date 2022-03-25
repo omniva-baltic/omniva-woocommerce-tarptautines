@@ -4,6 +4,7 @@ namespace OmnivaTarptautinesWoo;
 
 use OmnivaTarptautinesWoo\Helper;
 use OmnivaApi\Order as ApiOrder;
+use OmnivaTarptautinesWoo\Terminal;
 
 class Order {
 
@@ -97,18 +98,11 @@ class Order {
     }
     
     private function render_terminal_select($selected_id = false, $country = 'ALL', $identifier = "omniva"){
-        $terminals = $this->api->get_terminals();
-        $terminals = $terminals->parcel_machines ?? [];
+        $terminals = $this->api->get_terminals($country, $identifier);
         $parcel_terminals = '';
         if (is_array($terminals)) {
             $grouped_options = array();
             foreach ($terminals as $terminal) {
-                if ($terminal->country_code != $country && $country != "ALL") {
-                    continue;
-                }    
-                if ($terminal->identifier != $identifier) {
-                    continue;
-                }
                 if (!isset($grouped_options[$terminal->city])) {
                     $grouped_options[(string) $terminal->city] = array();
                 }    
@@ -179,12 +173,17 @@ class Order {
                 $sender = $this->core->get_sender();
                 $receiver = $this->core->get_receiver($order);
                 if ($terminal) {
+                    $terminal_obj = Terminal::getById($terminal);
+                    if (!$terminal_obj || !$terminal_obj->zip) {
+                        wp_send_json_success(['status' => 'error', 'msg' => __('Terminal not found', 'omniva_global')]);
+                    }
                     $receiver->setShippingType('terminal');
-                    $receiver->setZipcode($terminal);
+                    $receiver->setZipcode($terminal_obj->zip);
                 }
                 if ($eori) {
                     $receiver->setEori($eori);
                 }
+                
                 $api_order = new ApiOrder();
                 $api_order->setSender($sender);
                 $api_order->setReceiver($receiver);
