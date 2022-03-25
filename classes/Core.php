@@ -62,9 +62,21 @@ class Core {
 
         if (is_array($package)) {
             //create from array at checkout
-            $user = get_userdata($package['user']['ID']);
+            $user = false;
+            if ($package['user']['ID']) {
+                $user = get_userdata($package['user']['ID']);
+            }
             $receiver = new Receiver($send_off);
-            $receiver->setContactName($user->first_name . ' ' . $user->last_name);
+            if ($user) {
+                $receiver->setContactName($user->first_name . ' ' . $user->last_name);
+            } else {
+                $customer = WC()->session->get('customer');
+                if ($customer) {
+                    $receiver->setContactName($customer['first_name'] . ' ' . $customer['last_name']);
+                } else {
+                    $receiver->setContactName("");
+                }
+            }
             $receiver->setStreetName($package['destination']['address']);
             $receiver->setZipcode($package['destination']['postcode']);
             $receiver->setCity($package['destination']['city']);
