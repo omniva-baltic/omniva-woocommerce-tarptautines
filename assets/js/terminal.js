@@ -184,6 +184,8 @@ var TerminalMapping = /*#__PURE__*/function () {
           city = _ref$city === void 0 ? null : _ref$city,
           _ref$receiver_address = _ref.receiver_address,
           receiver_address = _ref$receiver_address === void 0 ? null : _ref$receiver_address,
+          _ref$max_distance = _ref.max_distance,
+          max_distance = _ref$max_distance === void 0 ? null : _ref$max_distance,
           _ref$isModal = _ref.isModal,
           isModal = _ref$isModal === void 0 ? true : _ref$isModal,
           _ref$modalParent = _ref.modalParent,
@@ -216,7 +218,8 @@ var TerminalMapping = /*#__PURE__*/function () {
           'country_code': country_code,
           'postal_code': postal_code,
           'city': city,
-          'receiver_address': receiver_address
+          'receiver_address': receiver_address,
+          'distance': max_distance
         }); // Get terminal list
 
         fetch(_this2.api_server_url + 'parcel_machines' + (params ? '?' + params : '')).then(function (response) {
@@ -681,7 +684,7 @@ var DOMManipulator = /*#__PURE__*/function () {
       var close_button_class = this.isModal ? '' : 'tmjs-hidden';
       var template = "\n      <div class=\"tmjs-modal-content\">\n\n        <div class=\"tmjs-modal-body\">\n          <div class=\"tmjs-map-container\"><div class=\"tmjs-map\"></div></div>\n          <div class=\"tmjs-terminal-sidebar\">\n            <div class=\"tmjs-terminal-finder\">\n              <h2 data-tmjs-string=\"modal_header\">".concat(strings.modal_header, "</h2>\n              <div class=\"tmjs-close-modal-btn ").concat(close_button_class, "\"></div>\n              <h3 class=\"tmjs-pt-2\" data-tmjs-string=\"seach_header\">").concat(strings.seach_header, "</h3>\n\n              <div class=\"tmjs-d-block\">\n                <input type=\"text\" class=\"tmjs-search-input\" placeholder=\"Įvesti\">\n                <a href=\"#search\" class=\"tmjs-search-btn\" ><img src=\"").concat(this.TMJS.imagePath, "search.svg\" width=\"18\"></a>\n              </div>\n\n              <div class=\"tmjs-d-block tmjs-pt-1\">\n                <a href=\"#useMyLocation\" class=\"tmjs-geolocation-btn\"><img src=\"").concat(this.TMJS.imagePath, "gps.svg\" width=\"15\"><span data-tmjs-string=\"geolocation_btn\">").concat(strings.geolocation_btn, "</span></a>\n              </div>\n              <div class=\"tmjs-search-result tmjs-d-block tmjs-pt-2\"></div>\n            </div>\n\n            <div class=\"tmjs-terminal-block\">\n              <h3 data-tmjs-string=\"terminal_list_header\">").concat(strings.terminal_list_header, "</h3>\n              <ul class=\"tmjs-terminal-list\"></ul>\n            </div>\n          </div>\n        </div>\n      </div>\n    ");
       var modal = this.createElement('div', {
-        classList: [this.isModal ? 'tmjs-modal' : 'tmjs-modal-flat', this.isModal ? 'tmjs-hidden' : ''],
+        classList: [this.isModal ? 'tmjs-modal omniva-global' : 'tmjs-modal-flat', this.isModal ? 'tmjs-hidden' : ''],
         innerHTML: template
       });
       modal.id = id;

@@ -86,7 +86,7 @@ function loadTerminalMapping() {
 
 
   tmjs.setImagesPath(omnivaSettings.api_url + '/');
-  tmjs.init({country_code: omnivaSettings.country , identifier: omnivaSettings.identifier, city: omniva_getCity() , post_code: omniva_getPostcode(), receiver_address: omniva_getAddress()});
+  tmjs.init({country_code: omnivaSettings.country , identifier: omnivaSettings.identifier, city: omniva_getCity() , post_code: omniva_getPostcode(), receiver_address: omniva_getAddress(), max_distance: omnivaSettings.max_distance});
 
   window['tmjs'] = tmjs;
 

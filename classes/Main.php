@@ -140,7 +140,7 @@ class Main {
 
         $omniva_settings = $this->core->get_config();
         $set_autoselect = (isset($omniva_settings['auto_select']) && $omniva_settings['auto_select'] == 'yes') ? 'true' : 'false';
-        $max_distance = (isset($omniva_settings['terminal_distance'])) ? $omniva_settings['terminal_distance'] : '2';
+        $max_distance = (isset($omniva_settings['terminal_distance']) && $omniva_settings['terminal_distance']) ? $omniva_settings['terminal_distance'] : '50';
        
         $script = "<script style='display:none;'>
         var omnivaSettings = {
