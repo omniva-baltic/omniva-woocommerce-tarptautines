@@ -128,3 +128,17 @@ ul.omniva-global-services label {
     transform: translateZ(0);
     animation: load8 1.1s infinite linear;
 }
+
+td.services-container ul {
+    max-width: 800px;
+}
+td.services-container li {
+    max-width: 100%;
+    width: 220px;
+    background: #FFFFFF;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+    padding: 10px;
+    display: inline-block;
+    margin: 0 10px 10px 0;
+}

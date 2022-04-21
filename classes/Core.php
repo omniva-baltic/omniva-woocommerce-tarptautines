@@ -154,9 +154,16 @@ class Core {
     private function selected_services() {
         $selected = [];
         foreach ($this->config as $key => $value) {
-            if ($value == "yes" && stripos($key, 'service_') !== false) {
-                $service_code = str_ireplace('service_', '', $key);
-                $selected[$service_code] = $service_code;
+            if ($value == "yes" && stripos($key, '_service_') !== false) {
+                $data = explode('_', $key);
+                if (count($data) == 3) {
+                    $group = $data[0];
+                    $service_code = $data[2];
+                    $group_enabled = isset($this->config[$group . '_enable']) && $this->config[$group . '_enable'] == 'yes' ? true : false;
+                    if ($group_enabled) {
+                        $selected[$service_code] = $group;
+                    }
+                }
             }
         }
         return $selected;
@@ -173,6 +180,7 @@ class Core {
                 if (!$this->is_own_login_ok($offer)) {
                     continue;
                 }
+                $offer->group = $selected_services[$offer->service_code];
                 $filtered_offers[] = $offer;
             }
         }
@@ -180,11 +188,12 @@ class Core {
     }
 
     public function set_offers_price(&$offers) {
-        $type = $this->config['price_type'];
-        $value = $this->config['price_value'];
 
         foreach ($offers as $offer) {
             $offer->org_price = $offer->price;
+            
+            $type = $this->config[$offer->group . '_price_type'];
+            $value = $this->config[$offer->group . '_price_value'];
             $offer->price = $this->calculate_price($offer->price, $type, $value);
         }
     }
@@ -199,15 +208,24 @@ class Core {
     }
 
     public function sort_offers(&$offers) {
-        $sort_by = $this->config['sort_by'] ?? "default";
-        if ($sort_by == "fastest") {
-            usort($offers, function ($v, $k) {
-                return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
-            });
-        } elseif ($sort_by == "cheapest") {
-            usort($offers, function ($v, $k) {
-                return $k->price <= $v->price;
-            });
+        $grouped = array();
+        foreach ($offers as $offer) {
+            if (!isset($grouped[$offer->group])) {
+                $grouped[$offer->group] = [];
+            }
+            $grouped[$offer->group] = $offer;
+        }
+        foreach ($grouped as $group => $grouped_offers) {
+            $sort_by = $this->config[$group . '_sort_by'] ?? "default";
+            if ($sort_by == "fastest") {
+                usort($grouped[$group], function ($v, $k) {
+                    return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
+                });
+            } elseif ($sort_by == "cheapest") {
+                usort($grouped[$group], function ($v, $k) {
+                    return $k->price <= $v->price;
+                });
+            }
         }
     }
 
