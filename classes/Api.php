@@ -23,6 +23,10 @@ class Api {
     }
     
     public function get_services(){
+        $token = Helper::get_config_value('api_token', $this->config, false);
+        if (!$token) {
+            return [];
+        }
         try {
             $cache_name = $this->prefix . '_services';
             $data = get_transient($cache_name);
@@ -43,6 +47,10 @@ class Api {
     }
     
     public function get_countries(){
+        $token = Helper::get_config_value('api_token', $this->config, false);
+        if (!$token) {
+            return [];
+        }
         try {
             $cache_name = $this->prefix . '_countries';
             $data = get_transient($cache_name);
