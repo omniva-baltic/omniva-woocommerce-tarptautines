@@ -99,8 +99,8 @@ class Manifest {
     public function register_omniva_manifest_menu_page() {
         add_submenu_page(
                 'woocommerce',
-                __('Omniva manifest', 'omniva_global'),
-                __('Omniva manifest', 'omniva_global'),
+                __('Omniva int. manifest', 'omniva_global'),
+                __('Omniva int. manifest', 'omniva_global'),
                 'manage_woocommerce',
                 'omniva-global-manifest',
                 array($this, 'render_page'),
