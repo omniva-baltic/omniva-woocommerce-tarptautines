@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name: Omniva Tarptautines Woocommerce
+ * Plugin Name: Omniva International Shipping
  * Version: 1.0.3
  * Plugin URI: https://github.com/mijora
- * Description: Omniva shipping module
+ * Description: Official Omniva plugin that combine shipping between different countries
  * Author: Mijora
  * Author URI: https://mijora.lt/
  * Text Domain: omniva_global
  * Domain Path: /languages
  *
  * Tested up to: 5.8.2
- * WC requires at least: 3.4
+ * WC requires at least: 4.0
  * WC tested up to: 5.9.0
  *
  */
