@@ -29,8 +29,8 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             $this->core = new Core;
             $this->api = $this->core->get_api();
             $this->id = Helper::get_prefix();
-            $this->method_title = __('Omniva global', 'omniva_global');
-            $this->method_description = __('Description of your shipping method', 'omniva_global');
+            $this->method_title = __('Omniva international', 'omniva_global');
+            $this->method_description = __('Omniva international shipping method', 'omniva_global');
             $this->supports = array(
                 'settings'
             );
@@ -66,6 +66,9 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
         {
             $countries_options = $this->get_countries_options();
             $fields = array(
+                'main_logo' => array(
+                    'type' => 'logo'
+                ),
                 'enabled' => array(
                     'title' => __('Enable', 'omniva_global'),
                     'type' => 'checkbox',
@@ -425,6 +428,11 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'type' => 'sync_button',
             );
 
+            $fields['refresh_services'] = array(
+                'title' => __('Update services', 'omniva_global'),
+                'type' => 'services_sync_button',
+            );
+
             $this->form_fields = $fields;
         }
 
@@ -439,6 +447,13 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
         {
             $class = (isset($value['class'])) ? $value['class'] : '';
             $html = '<tr valign="top"><th>' . ($value['title'] ?? '') . '</th><td colspan=""><button type = "button" class = "button-primary terminals-sync-btn">' . __('Update', 'omniva_global') . '</button></td></tr>';
+            return $html;
+        }
+
+        public function generate_services_sync_button_html($key, $value)
+        {
+            $class = (isset($value['class'])) ? $value['class'] : '';
+            $html = '<tr valign="top"><th>' . ($value['title'] ?? '') . '</th><td colspan=""><button type = "button" class = "button-primary services-sync-btn">' . __('Update', 'omniva_global') . '</button></td></tr>';
             return $html;
         }
 
@@ -481,6 +496,12 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             $html .= '<label for="' . $service_key . '"><input type="checkbox" name="' . $service_key . '" id="' . $service_key . '" style="" value="yes" ' . ( $this->get_option( $key ) == 'yes' ? 'checked' : '' ) . '>' . $service->name . '</label>';
             $html .= '<div><small>' . __(sprintf('Show %s service', $service->name), 'omniva_global') . '</small></div>';
             $html .= '</li>';
+            return $html;
+        }
+
+        public function generate_logo_html($key, $value)
+        {
+            $html = '<tr><th class="titledesc"><img src = "'.plugin_dir_url(__DIR__).'assets/images/logo.svg" style="width: 200px;"/></th></tr>';
             return $html;
         }
 

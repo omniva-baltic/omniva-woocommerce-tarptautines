@@ -25,7 +25,7 @@ class Order {
 
     public function omniva_meta_boxes($post) {
         if ($this->is_omniva_order($post)) {
-            add_meta_box('omniva_global_shipping_meta_box', __('Omniva shipping', 'omniva_global'), array($this, 'meta_box_content'), 'shop_order', 'side', 'core');
+            add_meta_box('omniva_global_shipping_meta_box', __('Omniva international', 'omniva_global'), array($this, 'meta_box_content'), 'shop_order', 'side', 'core');
         }
     }
 
@@ -39,6 +39,7 @@ class Order {
         $service_code = get_post_meta($post->ID, '_omniva_global_service', true);
         $available_services = $this->core->get_additional_services($service_code); 
         ?>
+        <img src = "<?php echo plugin_dir_url(__DIR__); ?>assets/images/logo.svg" style="width: 100px;"/>
         <div class ="errors"></div>
         <?php if ($shipment_id && $cart_id): ?>
             <?php
@@ -86,7 +87,7 @@ class Order {
                 <?php $this->render_services($available_services); ?>
                 
             <?php endif; ?>    
-            <?php $this->render_eori(); ?>    
+            <?php $this->render_hs(); ?>    
             <div class = "omniva-row">
                 <button type="button" value="create" id="omniva_global_create" name="omniva_global_create" class="button button-primary"><?php _e('Create', 'omniva_global'); ?></button>
             </div>
@@ -142,6 +143,13 @@ class Order {
         echo '</p>';
     }
 
+    private function render_hs() {
+        echo '<p>';
+        echo '<span class = "omniva_title">'.__('HS code: ', 'omniva_global'). '</span>';
+        echo '<input type = "text" class = "omniva_global_hs"/>';
+        echo '</p>';
+    }
+
     public function print_label($shipment_id) {
         if (current_user_can( 'edit_shop_orders' ) && is_admin() && isset($_GET['omniva_global_label'])) {
             $shipment_id = $_GET['omniva_global_label'];
@@ -166,6 +174,7 @@ class Order {
         $services = $_POST['services'] ?? [];
         $terminal = $_POST['terminal'] ?? 0;
         $eori = $_POST['eori'] ?? false;
+        $hs = $_POST['hs'] ?? false;
         if ($id && $order = wc_get_order($id)) {
             try {
                 $cod_amount = get_post_meta($id, '_order_total', true);
@@ -182,6 +191,9 @@ class Order {
                 }
                 if ($eori) {
                     $receiver->setEori($eori);
+                }
+                if ($hs) {
+                    $receiver->setHsCode($hs);
                 }
                 
                 $api_order = new ApiOrder();

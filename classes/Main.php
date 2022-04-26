@@ -42,6 +42,7 @@ class Main {
         add_filter('cron_schedules', array($this, 'cron_add_5min'));
         add_action('woocommerce_checkout_process', array($this, 'omniva_terminal_validate'));
         add_action( 'wp_ajax_omniva_terminals_sync', array($this, 'omniva_update_terminals'));
+        add_action( 'wp_ajax_omniva_services_sync', array($this, 'omniva_update_services'));
 
         if (get_option(Helper::get_prefix() . '_services_updated', 0) == 1) {
             add_action('admin_notices', array($this, 'updated_services_notice'));
@@ -256,6 +257,16 @@ class Main {
  
     public function omniva_update_terminals() {
         $this->api->update_terminals();
+        $array_result = array(
+            'message' => 'Updated'
+        );
+
+        wp_send_json($array_result);
+        wp_die();
+    }
+ 
+    public function omniva_update_services() {
+        $this->api->get_services(true);
         $array_result = array(
             'message' => 'Updated'
         );

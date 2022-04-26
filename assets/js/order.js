@@ -34,6 +34,8 @@ jQuery(document).ready(function($){
         loader(true);
         var services = [];
         var terminal = 0;
+        var eori = "";
+        var hs = "";
         $('.omniva_global_services').each(function(index, el){
             if ($(el).is(":checked")){
                 services.push($(el).val());
@@ -45,11 +47,15 @@ jQuery(document).ready(function($){
         if ($('.omniva_global_eori').length > 0){
             eori = $('.omniva_global_eori').val();
         }
+        if ($('.omniva_global_hs').length > 0){
+            hs = $('.omniva_global_hs').val();
+        }
         wp.ajax.post( "create_omniva_order", {
             order_id: $('#post_ID').val(),
             services: services,
             terminal: terminal,
-            eori: eori
+            eori: eori,
+            hs: hs
         } )
         .done(function(response) {
             if (response.status === 'error'){

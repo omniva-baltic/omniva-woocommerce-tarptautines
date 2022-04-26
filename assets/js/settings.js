@@ -24,5 +24,21 @@ jQuery(document).ready(function($){
             btn.removeClass('loading').prop('disabled', false);
         });
     });
+    
+    $('button.services-sync-btn').on('click', function() {
+        var btn = $(this);
+        btn.addClass('loading').prop('disabled', true);
+        jQuery.post(
+            omnivadata.ajax_url, 
+            {
+                'action': 'omniva_services_sync'
+            }, 
+            function(response) {
+                location.reload();
+            }
+        ).always(function() {
+            btn.removeClass('loading').prop('disabled', false);
+        });
+    });
 });
 

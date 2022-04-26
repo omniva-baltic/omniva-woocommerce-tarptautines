@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Omniva Tarptautines Woocommerce
- * Version: 1.0.2
+ * Version: 1.0.3
  * Plugin URI: https://github.com/mijora
  * Description: Omniva shipping module
  * Author: Mijora
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OMNIVA_GLOBAL_VERSION', '1.0.2');
+define('OMNIVA_GLOBAL_VERSION', '1.0.3');
 
 register_activation_hook(__FILE__, array( 'OmnivaTarptautinesWoo\Main', 'activated' ) );
 register_deactivation_hook( __FILE__, array( 'OmnivaTarptautinesWoo\Main', 'deactivated' ) );

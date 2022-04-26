@@ -22,7 +22,7 @@ class Api {
         $this->prefix = Helper::get_prefix() . '_api';
     }
     
-    public function get_services(){
+    public function get_services($force = false){
         $token = Helper::get_config_value('api_token', $this->config, false);
         if (!$token) {
             return [];
@@ -30,7 +30,7 @@ class Api {
         try {
             $cache_name = $this->prefix . '_services';
             $data = get_transient($cache_name);
-            if ($data === false) {
+            if ($data === false || $force) {
                 $data = $this->omniva_api->listAllServices();
                 set_transient($cache_name, $data, 1800);
                 $last_count = get_option(Helper::get_prefix() . '_total_services', 0);

@@ -99,8 +99,8 @@ class Manifest {
     public function register_omniva_manifest_menu_page() {
         add_submenu_page(
                 'woocommerce',
-                __('Omniva int. manifest', 'omniva_global'),
-                __('Omniva int. manifest', 'omniva_global'),
+                __('Omniva international', 'omniva_global'),
+                __('Omniva international', 'omniva_global'),
                 'manage_woocommerce',
                 'omniva-global-manifest',
                 array($this, 'render_page'),
@@ -193,7 +193,9 @@ class Manifest {
         ?>
 
         <div class="wrap page-omniva_manifest">
-            <h1><?php _e('Omniva manifest', 'omniva_global'); ?></h1>
+            
+            <img src = "<?php echo plugin_dir_url(__DIR__); ?>assets/images/logo.svg" style="width: 100px;"/>
+            <h1><?php _e('International manifest', 'omniva_global'); ?></h1>
 
             <?php
             $paged = 1;

@@ -81,6 +81,7 @@ class Core {
             $receiver->setZipcode($package['destination']['postcode']);
             $receiver->setCity($package['destination']['city']);
             $receiver->setCountryId($this->get_country_id($package['destination']['country']));
+            $receiver->setStateCode($package['destination']['state'] ?? null);
             $receiver->setPhoneNumber((string) WC()->checkout->get_value('shipping_phone') ?? WC()->checkout->get_value('billing_phone'));
             return $receiver;
         } elseif (is_object($package)) {
@@ -92,6 +93,7 @@ class Core {
             $receiver->setZipcode($package->get_shipping_postcode());
             $receiver->setCity($package->get_shipping_city());
             $receiver->setCountryId($this->get_country_id($package->get_shipping_country()));
+            $receiver->setStateCode($package->get_shipping_state());
             $receiver->setPhoneNumber((string)$package->get_billing_phone());
             return $receiver;
         }

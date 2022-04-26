@@ -38,7 +38,9 @@ class Receiver extends Person
             'city' => $this->city,
             'phone' => $this->phone_number,
             'country_id' => $this->country_id,
-            'eori' => $this->eori
+            'state_code' => $this->state_code,
+            'eori' => $this->eori,
+            'hs_code' => $this->hs_code
         );
 
         if ($this->shipping_type === self::SHIPPING_COURIER)

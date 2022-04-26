@@ -5,7 +5,7 @@
         'type' => 'wordpress-module',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '14bbc6a60df704f33ba1eda06ab0aa24fb5ce68f',
+        'reference' => '9e72dad160fc9cad5cc4b8206f31594e81edbd25',
         'name' => 'mijora/omniva-tarptautines-woo',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'wordpress-module',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '14bbc6a60df704f33ba1eda06ab0aa24fb5ce68f',
+            'reference' => '9e72dad160fc9cad5cc4b8206f31594e81edbd25',
             'dev_requirement' => false,
         ),
         'omniva/api-lib' => array(
@@ -27,7 +27,7 @@
             'aliases' => array(
                 0 => '9999999-dev',
             ),
-            'reference' => 'f956699273824a3b7f15167f51d7f820b14ee107',
+            'reference' => '9fa2a5f207161ef9e033eea2eba76952423dca55',
             'dev_requirement' => false,
         ),
     ),
