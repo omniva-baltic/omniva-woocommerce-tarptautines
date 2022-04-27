@@ -17,7 +17,7 @@ class Api {
     
     public function __construct($config = array()) {
         $this->config = $config;
-        $this->omniva_api = new Omniva_api(Helper::get_config_value('api_token', $config, "no_token"), false, false);
+        $this->omniva_api = new Omniva_api(Helper::get_config_value('api_token', $config, "no_token", true), false, false);
         $this->omniva_api->setUrl(Helper::get_config_value('api_url', $config) . "/api/v1/");
         $this->prefix = Helper::get_prefix() . '_api';
     }
