@@ -17,7 +17,7 @@ class Helper {
     }
 
     static function get_config_value($key, $config, $default = '') {
-        return $config[$key] ?? $default;
+        return isset($config[$key]) && !empty($config[$key]) ? $config[$key] : $default;
     }
 
     static function get_settings_url() {
