@@ -26,7 +26,7 @@ class Core {
 
     public function get_config() {
         if (empty($this->config)) {
-            $this->config = get_option('woocommerce_' . Helper::get_prefix() . '_settings');
+            $this->config = get_option('woocommerce_' . Helper::get_prefix() . '_settings', array());
         }
         return $this->config;
     }
