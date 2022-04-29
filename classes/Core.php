@@ -215,7 +215,7 @@ class Core {
             if (!isset($grouped[$offer->group])) {
                 $grouped[$offer->group] = [];
             }
-            $grouped[$offer->group] = $offer;
+            $grouped[$offer->group][] = $offer;
         }
         foreach ($grouped as $group => $grouped_offers) {
             $sort_by = $this->config[$group . '_sort_by'] ?? "default";
