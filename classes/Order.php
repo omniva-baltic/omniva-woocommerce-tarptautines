@@ -84,7 +84,7 @@ class Order {
                 </p>
             <?php endif; ?>
             <?php if (!empty($available_services)): ?>  
-                <?php $this->render_services($available_services); ?>
+                <?php $this->render_services($available_services, $post); ?>
                 
             <?php endif; ?>    
             <?php $this->render_hs(); ?>    
@@ -123,7 +123,7 @@ class Order {
         echo '<span class = "omniva_title">'.__('Terminal: ', 'omniva_global'). '</span> <select class="omniva_global_terminal" name="omniva_global_terminal">' . $parcel_terminals . '</select>';
     }
     
-    private function render_services($services) {
+    private function render_services($services, $order) {
         $all_services = Helper::additional_services();
         echo '<span class = "omniva_title">'.__('Services: ', 'omniva_global'). '</span>';
         echo '<ul class = "omniva-global-services">';
@@ -131,7 +131,11 @@ class Order {
             if (!isset($all_services[$id])) {
                 continue;
             }
-            echo '<li><input type = "checkbox" id = "service_'.$id.'" class = "omniva_global_services" name = "services[]" value = "'.$id.'"/><label for = "service_'.$id.'">'.$all_services[$id].'</label></li>';      
+            echo '<li><input type = "checkbox" id = "service_'.$id.'" class = "omniva_global_services" name = "services[]" value = "'.$id.'"/><label for = "service_'.$id.'">'.$all_services[$id].'</label>';
+            if ($id == 'cod') {
+                echo '<span class = "cod-amount"><input type = "number" name = "cod_amount" value = "'.get_post_meta($order->ID, '_order_total', true).'">EUR</span>';
+            }
+            echo '</li>';      
         }
         echo '</ul>';
     }
@@ -173,11 +177,14 @@ class Order {
         $id = $_POST['order_id'] ?? 0;
         $services = $_POST['services'] ?? [];
         $terminal = $_POST['terminal'] ?? 0;
+        $cod_amount = $_POST['cod_amount'] ?? false;
         $eori = $_POST['eori'] ?? false;
         $hs = $_POST['hs'] ?? false;
         if ($id && $order = wc_get_order($id)) {
             try {
-                $cod_amount = get_post_meta($id, '_order_total', true);
+                if ($cod_amount == false || empty($cod_amount)) {
+                    $cod_amount = get_post_meta($id, '_order_total', true);
+                }
                 $service_code = get_post_meta($id, '_omniva_global_service', true);
                 $sender = $this->core->get_sender();
                 $receiver = $this->core->get_receiver($order);

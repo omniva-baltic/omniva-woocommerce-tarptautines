@@ -45,6 +45,14 @@ ul.omniva-global-services label {
     line-height: 30px;
     display: block;
 }
+#omniva_global_shipping_meta_box .cod-amount {
+    font-weight: 600;
+}
+#omniva_global_shipping_meta_box .cod-amount input {
+    display: inline-block;
+    width: 80px;
+    font-weight: 400;
+}
 #omniva_global_shipping_meta_box #service_cod {
     max-width: 80px;
 }
