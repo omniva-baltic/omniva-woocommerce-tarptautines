@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - fixed token value, when is empty
+- added default values when no dimensions or weight are specified for the product
 
 ## [1.0.4]
 ### Added

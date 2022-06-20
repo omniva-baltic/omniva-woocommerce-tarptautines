@@ -124,10 +124,14 @@ class Core {
             if ($product->get_virtual($_product)) {
                 continue;
             }
-            $parcel->setUnitWeight($product->get_weight($_product));
-            $parcel->setHeight($product->get_height($_product));
-            $parcel->setWidth($product->get_width($_product));
-            $parcel->setLength($product->get_length($_product));
+            $product_weight = (!empty($product->get_weight($_product))) ? $product->get_weight($_product) : 1;
+            $product_height = (!empty($product->get_height($_product))) ? $product->get_height($_product) : 0;
+            $product_width = (!empty($product->get_width($_product))) ? $product->get_width($_product) : 0;
+            $product_length = (!empty($product->get_length($_product))) ? $product->get_length($_product) : 0;
+            $parcel->setUnitWeight($product_weight);
+            $parcel->setHeight($product_height);
+            $parcel->setWidth($product_width);
+            $parcel->setLength($product_length);
             $parcels[] = $parcel->generateParcel();
         }
         return $parcels;
