@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### FIxed
+- default dimensions values changed to 1
+
 ## [1.0.5]
 ### Fixed
 - fixed token value, when is empty
