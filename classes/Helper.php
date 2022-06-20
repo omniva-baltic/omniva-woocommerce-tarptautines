@@ -16,8 +16,18 @@ class Helper {
         return "omniva_global";
     }
 
-    static function get_config_value($key, $config, $default = '') {
-        return isset($config[$key]) && !empty($config[$key]) ? $config[$key] : $default;
+    /**
+     * Use default value, when config not exists
+     * 
+     * @param string $key - Config key
+     * @param array $config - All configs
+     * @param mixed $default - Default value
+     * @param boolean $not_allow_empty - Use default value when config exists, but value is empty
+     * 
+     * @return mixed - Config value or default value
+     */
+    static function get_config_value($key, $config, $default = '', $not_allow_empty = false) {
+        return ( !isset($config[$key]) || ($not_allow_empty && empty($config[$key])) ) ? $default : $config[$key];
     }
 
     static function get_settings_url() {
