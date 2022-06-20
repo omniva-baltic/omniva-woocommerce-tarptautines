@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.5]
 ### Fixed
 - fixed token value, when is empty
 - added default values when no dimensions or weight are specified for the product
