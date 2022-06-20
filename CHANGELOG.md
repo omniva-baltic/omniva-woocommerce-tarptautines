@@ -1,10 +1,14 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- fixed token value, when is empty
+
 ## [1.0.4]
 ### Added
 - added cod amount input field
 
-## [Unreleased]
+## [1.0.3]
 ### Added
 - added changelog file
 
