@@ -1,6 +1,6 @@
 # Omniva International plugin for WP WooCommerce
 
-## Requirements
+## Minimum requirements
 - Server: PHP 7.2
 - Plugins: WooCommerce 4.0
 
