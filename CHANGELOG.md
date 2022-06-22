@@ -1,11 +1,12 @@
 # Changelog
 
 ## [Unreleased]
-### FIxed
+### Fixed
 - default dimensions values changed to 1
 
 ### Added
 - added automaticaly weight unit change to kg
+- added settings link in plugins list
 
 ## [1.0.5]
 ### Fixed
