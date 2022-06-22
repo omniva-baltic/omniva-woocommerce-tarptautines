@@ -124,10 +124,17 @@ class Core {
             if ($product->get_virtual($_product)) {
                 continue;
             }
+            //Get weight and dimensions. Set default if empty
             $product_weight = (!empty($product->get_weight($_product))) ? $product->get_weight($_product) : 1;
-            $product_height = (!empty($product->get_height($_product))) ? $product->get_height($_product) : 0;
-            $product_width = (!empty($product->get_width($_product))) ? $product->get_width($_product) : 0;
-            $product_length = (!empty($product->get_length($_product))) ? $product->get_length($_product) : 0;
+            $product_height = (!empty($product->get_height($_product))) ? $product->get_height($_product) : 1;
+            $product_width = (!empty($product->get_width($_product))) ? $product->get_width($_product) : 1;
+            $product_length = (!empty($product->get_length($_product))) ? $product->get_length($_product) : 1;
+            //Change weight and dimensions unit to kg and cm
+            $product_weight = $this->change_weight_unit($product_weight, get_option('woocommerce_weight_unit'), 'kg');
+            $product_height = $this->change_dimension_unit($product_height, get_option('woocommerce_dimension_unit'), 'cm');
+            $product_width = $this->change_dimension_unit($product_width, get_option('woocommerce_dimension_unit'), 'cm');
+            $product_length = $this->change_dimension_unit($product_length, get_option('woocommerce_dimension_unit'), 'cm');
+            //Add weight and dimensions to parcel
             $parcel->setUnitWeight($product_weight);
             $parcel->setHeight($product_height);
             $parcel->setWidth($product_width);
@@ -349,4 +356,29 @@ class Core {
         return false;
     }
 
+    public function change_weight_unit($value, $current_unit, $new_unit) {
+        $to_kg = array(
+            'mg' => 0.000001,
+            'g' => 0.001,
+            'kg' => 1,
+            't' => 1000,
+            'gr' => 0.0000648,
+            'k' => 0.0002,
+            'oz' => 0.02835,
+            'lb' => 0.45359,
+            'cnt' => 100,
+        );
+
+        if ( isset($to_kg[$current_unit]) && isset($to_kg[$new_unit]) ) {
+            $current_kg = $value * $to_kg[$current_unit]; //Change value to kg
+            return $current_kg / $to_kg[$new_unit]; //Change kg value to new unit
+        }
+
+        return $value;
+    }
+
+    public function change_dimension_unit($value, $current_unit, $new_unit) {
+        //TODO: make dimension change
+        return $value;
+    }
 }
