@@ -4,6 +4,9 @@
 ### FIxed
 - default dimensions values changed to 1
 
+### Added
+- added automaticaly weight unit change to kg
+
 ## [1.0.5]
 ### Fixed
 - fixed token value, when is empty
