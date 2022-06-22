@@ -24,6 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('OMNIVA_GLOBAL_VERSION', '1.0.5');
+define('OMNIVA_GLOBAL_BASENAME', plugin_basename(__FILE__));
 
 register_activation_hook(__FILE__, array( 'OmnivaTarptautinesWoo\Main', 'activated' ) );
 register_deactivation_hook( __FILE__, array( 'OmnivaTarptautinesWoo\Main', 'deactivated' ) );

@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-### FIxed
+### Fixed
 - default dimensions values changed to 1
 
 ### Added
