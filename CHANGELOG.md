@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- fixed offers sort in the checkout page
+
+### Added
+- added a option to show one offer per group in the checkout page
+
 ## [1.0.6]
 ### Fixed
 - default dimensions values changed to 1
