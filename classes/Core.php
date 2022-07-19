@@ -221,6 +221,8 @@ class Core {
     }
 
     public function sort_offers(&$offers) {
+        $edited_offers = array();
+
         $grouped = array();
         foreach ($offers as $offer) {
             if (!isset($grouped[$offer->group])) {
@@ -228,6 +230,7 @@ class Core {
             }
             $grouped[$offer->group][] = $offer;
         }
+
         foreach ($grouped as $group => $grouped_offers) {
             $sort_by = $this->config[$group . '_sort_by'] ?? "default";
             if ($sort_by == "fastest") {
@@ -239,7 +242,41 @@ class Core {
                     return $k->price <= $v->price;
                 });
             }
+
+            foreach ($grouped[$group] as $offer) {
+                $edited_offers[] = $offer;
+            }
         }
+
+        $offers = $edited_offers;
+    }
+
+    public function show_offers(&$offers) {
+        $edited_offers = array();
+
+        $grouped = array();
+        foreach ($offers as $offer) {
+            if (!isset($grouped[$offer->group])) {
+                $grouped[$offer->group] = [];
+            }
+            $grouped[$offer->group][] = $offer;
+        }
+
+        foreach ($grouped as $group => $grouped_offers) {
+            $show_type = $this->config[$group . '_show_type'] ?? 'all';
+
+            if ($show_type == 'first') {
+                $grouped[$group] = array_slice($grouped_offers, 0, 1);
+            } elseif ($show_type == 'last') {
+                $grouped[$group] = array_slice($grouped_offers, -1, 1);
+            }
+
+            foreach ($grouped[$group] as $offer) {
+                $edited_offers[] = $offer;
+            }
+        }
+
+        $offers = $edited_offers;
     }
 
     public function get_offer_terminal_type($offer) {
