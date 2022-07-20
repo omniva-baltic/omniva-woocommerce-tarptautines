@@ -222,14 +222,7 @@ class Core {
 
     public function sort_offers(&$offers) {
         $edited_offers = array();
-
-        $grouped = array();
-        foreach ($offers as $offer) {
-            if (!isset($grouped[$offer->group])) {
-                $grouped[$offer->group] = [];
-            }
-            $grouped[$offer->group][] = $offer;
-        }
+        $grouped = $this->group_offers($offers);
 
         foreach ($grouped as $group => $grouped_offers) {
             $sort_by = $this->config[$group . '_sort_by'] ?? "default";
@@ -251,9 +244,8 @@ class Core {
         $offers = $edited_offers;
     }
 
-    public function show_offers(&$offers) {
-        $edited_offers = array();
-
+    private function group_offers($offers)
+    {
         $grouped = array();
         foreach ($offers as $offer) {
             if (!isset($grouped[$offer->group])) {
@@ -261,6 +253,13 @@ class Core {
             }
             $grouped[$offer->group][] = $offer;
         }
+
+        return $grouped;
+    }
+
+    public function show_offers(&$offers) {
+        $edited_offers = array();
+        $grouped = $this->group_offers($offers);
 
         foreach ($grouped as $group => $grouped_offers) {
             $show_type = $this->config[$group . '_show_type'] ?? 'all';
@@ -337,9 +336,10 @@ class Core {
         return $price;
     }
 
-    public function is_free_shipping() {
+    public function is_free_shipping($group_name) {
         $cart_total = WC()->cart->get_cart_contents_total();
-        $free_ship = $this->config['free_shipping'] ?? 0;
+
+        $free_ship = $this->config[$group_name . '_free_shipping'] ?? 0;
         if ($free_ship > 0 && $free_ship <= $cart_total) {
             return true;
         }

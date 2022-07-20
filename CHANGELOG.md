@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - fixed offers sort in the checkout page
+- fixed free shipping
 
 ### Added
 - added a option to show one offer per group in the checkout page

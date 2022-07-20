@@ -559,8 +559,6 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 $this->core->show_offers($offers);
                 $this->core->set_offers_price($offers);
 
-                $free_shipping = $this->core->is_free_shipping();
-
                 $current_service = 0;
                 //if (isset($config['courier_enable']) && $config['courier_enable'] == 'yes' && (!$config['weight_c'] || $config['weight_c'] > $cart_weight)) {
                     foreach ($offers as $offer) {
@@ -569,6 +567,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         }
                         $group = $offer->group;
                         $courier_title = $config[$group .'_title'] ?? 'Courier';
+                        $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_service_' . $offer->service_code,
                             'label' => $courier_title . ' (' . $offer->delivery_time . ')',
@@ -590,6 +589,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                             continue;
                         }
                         $terminal_title = $config['terminals_title'] ?? 'Parcel terminal';
+                        $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_terminal_' . $this->core->get_offer_terminal_type($offer) . '_service_' . $offer->service_code,
                             'label' => $terminal_title . ' (' . $offer->delivery_time . ')',
