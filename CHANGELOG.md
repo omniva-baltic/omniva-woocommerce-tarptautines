@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.7]
 ### Fixed
 - fixed offers sort in the checkout page
 - fixed free shipping
+- added consolidare option, to send as one parcel
 
 ### Added
 - added a option to show one offer per group in the checkout page
