@@ -104,9 +104,13 @@ class Core {
     //TO DO calculate dimensions, weight
     public function get_parcels($order = false) {
         global $woocommerce;
+        $config = $this->get_config();
+        $send_as_one = $config['send_as_one'] ?? 'no';
+
         $product = new Product();
-        $product->set_config($this->get_config());
+        $product->set_config($config);
         $parcels = [];
+        $parcel_objects = [];
         if ($order) {
             $items = $order->get_items();
         } else {
@@ -139,7 +143,31 @@ class Core {
             $parcel->setHeight($product_height);
             $parcel->setWidth($product_width);
             $parcel->setLength($product_length);
+            $parcel_objects[] = $parcel;
             $parcels[] = $parcel->generateParcel();
+        }
+
+        if ($send_as_one == 'yes') {
+            $main_parcel = new Parcel();
+            $total_weight = 0;
+            $total_volume = 0;
+            $total_amount = 1;
+            foreach ($parcel_objects as $parcel) {
+                try {
+                    $parcel_data = $parcel->__toArray();
+                    $total_weight += $parcel_data['weight'] * $parcel_data['amount'];
+                    $total_volume += $parcel_data['x'] * $parcel_data['y'] * $parcel_data['z'] * $parcel_data['amount'];
+                } catch (\Throwable $e) {
+
+                }
+            }
+            $cube_size = ceil($total_volume**(1/3));
+            $main_parcel->setAmount(1);
+            $main_parcel->setUnitWeight($total_weight);
+            $main_parcel->setHeight($cube_size);
+            $main_parcel->setWidth($cube_size);
+            $main_parcel->setLength($cube_size);
+            return [$main_parcel->generateParcel()];
         }
         return $parcels;
     }
@@ -221,6 +249,44 @@ class Core {
     }
 
     public function sort_offers(&$offers) {
+        $edited_offers = array();
+
+        $main_sort_by = $this->config['sort_by'] ?? "default";
+        if ($main_sort_by == 'default') {
+            $grouped = $this->group_offers($offers);
+
+            foreach ($grouped as $group => $grouped_offers) {
+                $sort_by = $this->config[$group . '_sort_by'] ?? "default";
+                if ($sort_by == "fastest") {
+                    usort($grouped[$group], function ($v, $k) {
+                        return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
+                    });
+                } elseif ($sort_by == "cheapest") {
+                    usort($grouped[$group], function ($v, $k) {
+                        return $k->price <= $v->price;
+                    });
+                }
+
+                foreach ($grouped[$group] as $offer) {
+                    $edited_offers[] = $offer;
+                }
+            }
+            $offers = $edited_offers;
+        } else {
+            if ($main_sort_by == "fastest") {
+                usort($offers, function ($v, $k) {
+                    return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
+                });
+            } elseif ($main_sort_by == "cheapest") {
+                usort($offers, function ($v, $k) {
+                    return $k->price <= $v->price;
+                });
+            }
+        }
+    }
+
+    private function group_offers($offers)
+    {
         $grouped = array();
         foreach ($offers as $offer) {
             if (!isset($grouped[$offer->group])) {
@@ -228,18 +294,29 @@ class Core {
             }
             $grouped[$offer->group][] = $offer;
         }
+
+        return $grouped;
+    }
+
+    public function show_offers(&$offers) {
+        $edited_offers = array();
+        $grouped = $this->group_offers($offers);
+
         foreach ($grouped as $group => $grouped_offers) {
-            $sort_by = $this->config[$group . '_sort_by'] ?? "default";
-            if ($sort_by == "fastest") {
-                usort($grouped[$group], function ($v, $k) {
-                    return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
-                });
-            } elseif ($sort_by == "cheapest") {
-                usort($grouped[$group], function ($v, $k) {
-                    return $k->price <= $v->price;
-                });
+            $show_type = $this->config[$group . '_show_type'] ?? 'all';
+
+            if ($show_type == 'first') {
+                $grouped[$group] = array_slice($grouped_offers, 0, 1);
+            } elseif ($show_type == 'last') {
+                $grouped[$group] = array_slice($grouped_offers, -1, 1);
+            }
+
+            foreach ($grouped[$group] as $offer) {
+                $edited_offers[] = $offer;
             }
         }
+
+        $offers = $edited_offers;
     }
 
     public function get_offer_terminal_type($offer) {
@@ -300,9 +377,10 @@ class Core {
         return $price;
     }
 
-    public function is_free_shipping() {
+    public function is_free_shipping($group_name) {
         $cart_total = WC()->cart->get_cart_contents_total();
-        $free_ship = $this->config['free_shipping'] ?? 0;
+
+        $free_ship = $this->config[$group_name . '_free_shipping'] ?? 0;
         if ($free_ship > 0 && $free_ship <= $cart_total) {
             return true;
         }

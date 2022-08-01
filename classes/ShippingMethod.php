@@ -182,13 +182,18 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     'data-depends' => 'woocommerce_' . Helper::get_prefix() . '_terminal_enable'
                 ),
             );
+            */
             
+            $fields['hr_after_shop'] = array(
+                'type' => 'hr'
+            );
+
             $fields['sort_by'] = array(
                 'title' => __('Services order', 'omniva_global'),
                 'type' => 'select',
-                'description' => __('Select how services will be order in checkout', 'omniva_global'),
+                'description' => __('Select how services will be sorted in checkout', 'omniva_global'),
                 'options' => array(
-                    'default' => __('Default', 'omniva_global'),
+                    'default' => __('Default (sort by service provider seperately)', 'omniva_global'),
                     'cheapest' => __('Cheapest first', 'omniva_global'),
                     'fastest' => __('Fastest first', 'omniva_global'),
                 )
@@ -197,10 +202,17 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             $fields['services_limit'] = array(
                 'title' => __('Services limit', 'omniva_global'),
                 'type' => 'number',
-                'description' => __('Select how many services will be visible in checkout', 'omniva_global'),
-                'default' => '1'
+                'description' => __('Select how many services will be visible in checkout. `-1` - for unlimited', 'omniva_global'),
+                'default' => '-1'
             );
-            */
+            
+            $fields['send_as_one'] = array(
+                'title' => __('Consolidare', 'omniva_global'),
+                'description' => __('Send as one package', 'omniva_global'),
+                'type' => 'checkbox',
+                'default' => 'no',
+            );
+            
             $services = $this->api->get_services();
             if (is_array($services)) {
                 $service_groups = [];
@@ -232,11 +244,22 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     $fields[$group_name . '_sort_by'] = array(
                         'title' => __('Services order', 'omniva_global'),
                         'type' => 'select',
-                        'description' => __('Select how services will be order in checkout', 'omniva_global'),
+                        'description' => __('Select how services will be sorted in the checkout', 'omniva_global'),
                         'options' => array(
                             'default' => __('Default', 'omniva_global'),
                             'cheapest' => __('Cheapest first', 'omniva_global'),
                             'fastest' => __('Fastest first', 'omniva_global'),
+                        )
+                    );
+
+                    $fields[$group_name . '_show_type'] = array(
+                        'title' => __('Services showing', 'omniva_global'),
+                        'type' => 'select',
+                        'description' => __('Select how many this group services will be showing in the checkout', 'omniva_global'),
+                        'options' => array(
+                            'all' => __('All list', 'omniva_global'),
+                            'first' => __('First in the list', 'omniva_global'),
+                            'last' => __('Last in the list', 'omniva_global'),
                         )
                     );
 
@@ -544,12 +567,12 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 $config = $this->core->get_config();
                 
                 $offers = $this->core->filter_enabled_offers($this->core->get_offers($package));
-                $this->core->sort_offers($offers);
                 $this->core->set_offers_price($offers);
-
-                $free_shipping = $this->core->is_free_shipping();
+                $this->core->sort_offers($offers);
+                $this->core->show_offers($offers);
 
                 $current_service = 0;
+                $services_limit = $config['services_limit'] ?? -1;
                 //if (isset($config['courier_enable']) && $config['courier_enable'] == 'yes' && (!$config['weight_c'] || $config['weight_c'] > $cart_weight)) {
                     foreach ($offers as $offer) {
                         if ($this->core->is_offer_terminal($offer)) {
@@ -557,6 +580,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         }
                         $group = $offer->group;
                         $courier_title = $config[$group .'_title'] ?? 'Courier';
+                        $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_service_' . $offer->service_code,
                             'label' => $courier_title . ' (' . $offer->delivery_time . ')',
@@ -564,11 +588,11 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         );
                         $this->add_rate($rate);
                         $current_service++;
-                        /*
-                        if ($services_limit <= $current_service) {
+                        
+                        if ($services_limit != '' && $services_limit > 0 && $services_limit <= $current_service) {
                             break;
                         }
-                        */
+                        
                     }
                 //}
 
@@ -578,6 +602,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                             continue;
                         }
                         $terminal_title = $config['terminals_title'] ?? 'Parcel terminal';
+                        $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_terminal_' . $this->core->get_offer_terminal_type($offer) . '_service_' . $offer->service_code,
                             'label' => $terminal_title . ' (' . $offer->delivery_time . ')',
