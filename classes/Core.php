@@ -179,7 +179,7 @@ class Core {
         foreach ($order_items as $id => $data) {
             $item = new Item();
             $item->setItemAmount($data->get_quantity());
-            $item->setDescription($data->get_name());
+            $item->setDescription(substr($data->get_name(),0,39));
             $item->setItemPrice($data->get_total() / $data->get_quantity());
             $item->setCountryId($this->get_country_id($config['shop_countrycode']));
             $items[] = $item->generateItem();

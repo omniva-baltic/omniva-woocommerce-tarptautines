@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.8]
+### Fixed
+- bugfix in too long product name size
+
 ## [1.0.7]
 ### Fixed
 - fixed offers sort in the checkout page
