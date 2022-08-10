@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.10]
+### Updated
+- Added postal code to address field fetching parcel terminals
+
 ## [1.0.9]
 ### Fixed
 - bugfix: misspelled attribute name in function
