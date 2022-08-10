@@ -218,7 +218,7 @@ var TerminalMapping = /*#__PURE__*/function () {
           'country_code': country_code,
           'postal_code': postal_code,
           'city': city,
-          'receiver_address': receiver_address,
+          'receiver_address': receiver_address + ' ' + postal_code,
           'distance': max_distance
         }); // Get terminal list
 
