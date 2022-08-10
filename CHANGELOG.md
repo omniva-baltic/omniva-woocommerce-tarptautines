@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.9]
+### Fixed
+- bugfix: misspelled attribute name in function
+
 ## [1.0.8]
 ### Fixed
 - bugfix in too long product name size
