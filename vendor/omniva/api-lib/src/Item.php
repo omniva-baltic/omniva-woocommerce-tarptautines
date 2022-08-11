@@ -50,7 +50,7 @@ class Item
     public function generateItem()
     {
         if (!$this->description) throw new OmnivaApiException('All the fields must be filled. description is missing.');
-        if (!$this->value) throw new OmnivaApiException('All the fields must be filled. value is missing.');
+        if (!isset($this->value)) throw new OmnivaApiException('All the fields must be filled. value is missing.');
         if (!$this->units) throw new OmnivaApiException('All the fields must be filled. units is missing.');
         if (!$this->country_id) throw new OmnivaApiException('All the fields must be filled. country_id is missing.');
         return array(
