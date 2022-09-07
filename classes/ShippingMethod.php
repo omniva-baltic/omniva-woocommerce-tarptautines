@@ -188,23 +188,25 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'type' => 'hr'
             );
 
-            $fields['sort_by'] = array(
-                'title' => __('Services order', 'omniva_global'),
+            $fields['show_type'] = array(
+                'title' => __('Show of service from group', 'omniva_global'),
                 'type' => 'select',
-                'description' => __('Select how services will be sorted in checkout', 'omniva_global'),
+                'description' => __('Select which service of the group show in checkout. The selected value will apply to all groups.', 'omniva_global'),
                 'options' => array(
-                    'default' => __('Default (sort by service provider seperately)', 'omniva_global'),
-                    'cheapest' => __('Cheapest first', 'omniva_global'),
-                    'fastest' => __('Fastest first', 'omniva_global'),
+                    'default' => __('Set for each group separately (Select in group settings)', 'omniva_global'),
+                    'cheapest' => __('Cheapest', 'omniva_global'),
+                    'expensive' => __('Most expensive', 'omniva_global'),
+                    'fastest' => __('Fastest', 'omniva_global'),
+                    'slowest' => __('Slowest', 'omniva_global'),
                 )
             );
 
-            $fields['services_limit'] = array(
+            /*$fields['services_limit'] = array(
                 'title' => __('Services limit', 'omniva_global'),
                 'type' => 'number',
                 'description' => __('Select how many services will be visible in checkout. `-1` - for unlimited', 'omniva_global'),
                 'default' => '-1'
-            );
+            );*/
             
             $fields['send_as_one'] = array(
                 'title' => __('Consolidare', 'omniva_global'),
@@ -240,8 +242,21 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         'type' => 'text',
                         'default' => ucfirst($group_name),
                     );
+
+                    $fields[$group_name . '_show_type'] = array(
+                        'title' => __('Service showing', 'omniva_global'),
+                        'type' => 'select',
+                        'description' => __('Select which service of this group show in the checkout', 'omniva_global'),
+                        'options' => array(
+                            //'default' => __('Default', 'omniva_global'),
+                            'cheapest' => __('Cheapest', 'omniva_global'),
+                            'expensive' => __('Most expensive', 'omniva_global'),
+                            'fastest' => __('Fastest', 'omniva_global'),
+                            'slowest' => __('Slowest', 'omniva_global'),
+                        )
+                    );
             
-                    $fields[$group_name . '_sort_by'] = array(
+                    /*$fields[$group_name . '_sort_by'] = array(
                         'title' => __('Services order', 'omniva_global'),
                         'type' => 'select',
                         'description' => __('Select how services will be sorted in the checkout', 'omniva_global'),
@@ -257,11 +272,11 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         'type' => 'select',
                         'description' => __('Select how many this group services will be showing in the checkout', 'omniva_global'),
                         'options' => array(
-                            'all' => __('All list', 'omniva_global'),
+                            //'all' => __('All list', 'omniva_global'),
                             'first' => __('First in the list', 'omniva_global'),
                             'last' => __('Last in the list', 'omniva_global'),
                         )
-                    );
+                    );*/
 
                     $fields[$group_name . '_price_type'] = array(
                         'title' => __('Price type', 'omniva_global'),
@@ -572,7 +587,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 $this->core->show_offers($offers);
 
                 $current_service = 0;
-                $services_limit = $config['services_limit'] ?? -1;
+                //$services_limit = $config['services_limit'] ?? -1;
                 //if (isset($config['courier_enable']) && $config['courier_enable'] == 'yes' && (!$config['weight_c'] || $config['weight_c'] > $cart_weight)) {
                     foreach ($offers as $offer) {
                         if ($this->core->is_offer_terminal($offer)) {
@@ -589,9 +604,9 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         $this->add_rate($rate);
                         $current_service++;
                         
-                        if ($services_limit != '' && $services_limit > 0 && $services_limit <= $current_service) {
+                        /*if ($services_limit != '' && $services_limit > 0 && $services_limit <= $current_service) {
                             break;
-                        }
+                        }*/
                         
                     }
                 //}
