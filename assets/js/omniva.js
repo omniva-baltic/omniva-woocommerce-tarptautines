@@ -16,8 +16,10 @@ jQuery(document).on('ready', function($) {
   });
 
   jQuery('body').on("updated_checkout updated_shipping_method", function() {
-    removeOmnivaIntMap();
-    loadOmnivaIntMapping();
+    if ( jQuery('.tmjs-container').length > 0 && omniva_global_terminals_loading === false ) {
+      removeOmnivaIntMap();
+      loadOmnivaIntMapping();
+    }
   });
 });
 
@@ -71,8 +73,16 @@ function omnivaInt_getAddress() {
 
 function removeOmnivaIntMap() {
   if ( typeof tmjs !== 'undefined' && omniva_global_terminals_loading === false ) {
-    document.getElementById(tmjs.containerId).remove();
-    document.getElementById(tmjs.containerId + "_modal").remove();
+    var container = document.getElementById(tmjs.containerId);
+    if ( document.body.contains(container) ) {
+      container.remove();
+    }
+
+    var modal = document.getElementById(tmjs.containerId + "_modal");
+    if ( document.body.contains(modal) ) {
+      modal.remove();
+    }
+
     window['tmjs'] = null;
   }
 }
