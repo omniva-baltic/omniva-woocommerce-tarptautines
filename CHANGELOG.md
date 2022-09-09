@@ -4,6 +4,9 @@
 ### Updated
 - Reworked method display settings
 
+### Added
+- Added terminals showing in map by postcode
+
 ## [1.0.11]
 ### Updated
 - Allow item to be value of 0
