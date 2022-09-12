@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Updated
 - Reworked method display settings
+- Updated Omniva API lib
 
 ### Added
 - Added terminals showing in map by postcode
