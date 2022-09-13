@@ -9,6 +9,9 @@
 - Added terminals showing in map by postcode
 - Added error message if order label/manifest not received
 
+### Fixed
+- Removed "import" services showing
+
 ## [1.0.11]
 ### Updated
 - Allow item to be value of 0
