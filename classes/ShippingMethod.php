@@ -219,6 +219,9 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             if (is_array($services)) {
                 $service_groups = [];
                 foreach ($services as $service) {
+                    if ($service->direction != 'Export') {
+                        continue;
+                    }
                     $group_name = strtolower($service->service_type);
                     if ($service->delivery_to_address == false) {
                         $group_name = 'terminals';
