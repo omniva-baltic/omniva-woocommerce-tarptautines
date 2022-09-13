@@ -3,9 +3,11 @@
 ## [Unreleased]
 ### Updated
 - Reworked method display settings
+- Updated Omniva API lib
 
 ### Added
 - Added terminals showing in map by postcode
+- Added error message if order label/manifest not received
 
 ## [1.0.11]
 ### Updated
