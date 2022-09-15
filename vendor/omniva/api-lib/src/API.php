@@ -115,6 +115,10 @@ class API
             throw new OmnivaApiException(implode(" \n", json_decode($response)->errors));
         }
 
+        if ($httpCode == 502) {
+            throw new OmnivaApiException('API got error:<br><br>' . 'errors in ' . debug_backtrace()[2]['function'] . '():<br><br>' . 'Unable to connect to server');
+        }
+
         if (isset($respObj['errors']) && $respObj['errors']) {
 			if ($this->debug_mode) {
 				echo 'errors in ' . debug_backtrace()[2]['function'] . '():<br><br>';

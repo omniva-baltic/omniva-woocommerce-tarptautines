@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.12]
+### Updated
+- Reworked method display settings
+- Updated Omniva API lib
+
+### Added
+- Added terminals showing in map by postcode
+- Added error message if order label/manifest not received
+
+### Fixed
+- Removed "import" services showing
+
+## [1.0.11]
+### Updated
+- Allow item to be value of 0
+
 ## [1.0.10]
 ### Updated
 - Added postal code to address field fetching parcel terminals

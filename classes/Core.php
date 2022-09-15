@@ -251,20 +251,33 @@ class Core {
     public function sort_offers(&$offers) {
         $edited_offers = array();
 
-        $main_sort_by = $this->config['sort_by'] ?? "default";
-        if ($main_sort_by == 'default') {
+        $main_show_type = $this->config['show_type'] ?? 'default';
+        if ($main_show_type == 'default') {
             $grouped = $this->group_offers($offers);
 
             foreach ($grouped as $group => $grouped_offers) {
-                $sort_by = $this->config[$group . '_sort_by'] ?? "default";
-                if ($sort_by == "fastest") {
-                    usort($grouped[$group], function ($v, $k) {
-                        return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
-                    });
-                } elseif ($sort_by == "cheapest") {
-                    usort($grouped[$group], function ($v, $k) {
-                        return $k->price <= $v->price;
-                    });
+                $show_type = $this->config[$group . '_show_type'] ?? 'cheapest';
+                switch ($show_type) {
+                    case 'cheapest':
+                        usort($grouped[$group], function ($v, $k) {
+                            return $k->price <= $v->price;
+                        });
+                        break;
+                    case 'expensive':
+                        usort($grouped[$group], function ($v, $k) {
+                            return $k->price >= $v->price;
+                        });
+                        break;
+                    case 'fastest':
+                        usort($grouped[$group], function ($v, $k) {
+                            return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
+                        });
+                        break;
+                    case 'slowest':
+                        usort($grouped[$group], function ($v, $k) {
+                            return $this->get_offer_delivery($k) >= $this->get_offer_delivery($v);
+                        });
+                        break;
                 }
 
                 foreach ($grouped[$group] as $offer) {
@@ -273,14 +286,27 @@ class Core {
             }
             $offers = $edited_offers;
         } else {
-            if ($main_sort_by == "fastest") {
-                usort($offers, function ($v, $k) {
-                    return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
-                });
-            } elseif ($main_sort_by == "cheapest") {
-                usort($offers, function ($v, $k) {
-                    return $k->price <= $v->price;
-                });
+            switch ($main_show_type) {
+                case 'cheapest':
+                    usort($offers, function ($v, $k) {
+                        return $k->price <= $v->price;
+                    });
+                    break;
+                case 'expensive':
+                    usort($offers, function ($v, $k) {
+                        return $k->price >= $v->price;
+                    });
+                    break;
+                case 'fastest':
+                    usort($offers, function ($v, $k) {
+                        return $this->get_offer_delivery($k) <= $this->get_offer_delivery($v);
+                    });
+                    break;
+                case 'slowest':
+                    usort($offers, function ($v, $k) {
+                        return $this->get_offer_delivery($k) >= $this->get_offer_delivery($v);
+                    });
+                    break;
             }
         }
     }
@@ -303,13 +329,7 @@ class Core {
         $grouped = $this->group_offers($offers);
 
         foreach ($grouped as $group => $grouped_offers) {
-            $show_type = $this->config[$group . '_show_type'] ?? 'all';
-
-            if ($show_type == 'first') {
-                $grouped[$group] = array_slice($grouped_offers, 0, 1);
-            } elseif ($show_type == 'last') {
-                $grouped[$group] = array_slice($grouped_offers, -1, 1);
-            }
+            $grouped[$group] = array_slice($grouped_offers, 0, 1);
 
             foreach ($grouped[$group] as $offer) {
                 $edited_offers[] = $offer;

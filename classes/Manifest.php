@@ -53,6 +53,13 @@ class Manifest {
                 } else {
                     $response = $this->api->generate_latest_manifest();
                 }
+
+                if ($labels && empty($response->labels)) {
+                    throw new \Exception(__('Failed to get labels', 'omniva_global'));
+                }
+                if (!$labels && empty($response->manifest)) {
+                    throw new \Exception(__('Failed to get manifest', 'omniva_global'));
+                }
                 
                 $orders = get_posts(array(
                     'numberposts'   => -1,
@@ -355,7 +362,7 @@ class Manifest {
                         <thead>
 
                             <tr class="omniva-filter">
-                                <td class="manage-column column-cb check-column"><input type="checkbox" class="check-all" /></td>
+                                <td class="manage-column column-cb check-column"><?php /*<input type="checkbox" class="check-all" />*/ //Disabled while not working ?></td>
                                 <th class="manage-column column-order_id">
                                     <input type="text" class="d-inline" name="filter_id" id="filter_id" value="<?php echo $filters['id']; ?>" placeholder="<?php echo __('ID', 'omniva_global'); ?>" aria-label="Order ID filter">
                                 </th>
@@ -428,7 +435,7 @@ class Manifest {
                                     </tr>
                                 <?php endif; ?>
                                 <tr class="data-row">
-                                    <th scope="row" class="check-column"><input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" /></th>
+                                    <th scope="row" class="check-column"><?php /*<input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" />*/ //Disabled while not working ?></th>
                                     <td class="manage-column column-order_id">
                                         <a href="<?php echo $order->get_edit_order_url(); ?>">#<?php echo $order->get_order_number(); ?></a>
                                     </td>
@@ -489,6 +496,9 @@ class Manifest {
                                         <a href="<?php echo Helper::generate_manifest_url($cart_id);?>" target = "_blank" class="button action">
                                             <?php echo __('Print manifest', 'omniva_global'); ?>
                                         </a>
+                                        <?php endif; ?>
+                                        <?php if ($shipment_id && !$barcode && !$manifest_date) : ?>
+                                            <span class="no-results"><?php _e('Preparing...', 'omniva_global'); ?></span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

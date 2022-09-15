@@ -1,92 +1,118 @@
 var omniva_global_terminals_loading = false;
+
 jQuery(document).on('ready', function($) {
-    jQuery('body').on('click','.shipping_method', function(){
-        if (typeof(omnivaint_terminal_reference) !== 'undefined' ) {
-            if (jQuery(this).attr('value') !== omnivaint_terminal_reference) {
-                jQuery('.tmjs-container').hide();
-            }
-        }
-    });
-  
+  jQuery('body').on('click','.shipping_method', function(){
+    if (typeof(omnivaint_terminal_reference) !== 'undefined' ) {
+      if (jQuery(this).attr('value') !== omnivaint_terminal_reference) {
+        jQuery('.tmjs-container').hide();
+      }
+    }
+  });
+
   jQuery('body').on('load-omniva-terminals', () => {
      if(jQuery('.tmjs-container').length == 0 && omniva_global_terminals_loading === false){
-        loadTerminalMapping();
+        loadOmnivaIntMapping();
      }
   });
+
+  jQuery('body').on("updated_checkout updated_shipping_method", function() {
+    if ( jQuery('.tmjs-container').length > 0 && omniva_global_terminals_loading === false ) {
+      removeOmnivaIntMap();
+      loadOmnivaIntMapping();
+    }
+  });
 });
-function omniva_getPostcode() {
-        var postcode;
-        if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
-            if (jQuery("#shipping_postcode").length && $("#shipping_postcode").val()) {
-                postcode = jQuery("#shipping_postcode").val();
-            }
-        } else {
-            if (jQuery("#billing_postcode").length && jQuery("#billing_postcode").val()) {
-                postcode = jQuery("#billing_postcode").val();
-            } else if (jQuery("#calc_shipping_postcode").length && jQuery("#calc_shipping_postcode").val()) {
-                postcode = jQuery("#calc_shipping_postcode").val();
-            }
-        }
-        return postcode;
+
+function omnivaInt_getPostcode() {
+  var postcode;
+  if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
+    if (jQuery("#shipping_postcode").length && $("#shipping_postcode").val()) {
+      postcode = jQuery("#shipping_postcode").val();
     }
-    
-    function omniva_getCity() {
-        var city;
-        if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
-            if (jQuery("#shipping_city").length && $("#shipping_city").val()) {
-                city = jQuery("#shipping_city").val();
-            }
-        } else {
-            if (jQuery("#billing_city").length && jQuery("#billing_city").val()) {
-                city = jQuery("#billing_city").val();
-            } else if (jQuery("#calc_shipping_city").length && jQuery("#calc_shipping_city").val()) {
-                city = jQuery("#calc_shipping_city").val();
-            }
-        }
-        return city;
+  } else {
+    if (jQuery("#billing_postcode").length && jQuery("#billing_postcode").val()) {
+      postcode = jQuery("#billing_postcode").val();
+    } else if (jQuery("#calc_shipping_postcode").length && jQuery("#calc_shipping_postcode").val()) {
+      postcode = jQuery("#calc_shipping_postcode").val();
     }
-    
-    function omniva_getAddress() {
-        var address;
-        if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
-            if (jQuery("#shipping_address_1").length && $("#shipping_address_1").val()) {
-                address = jQuery("#shipping_address_1").val();
-            }
-        } else {
-            if (jQuery("#billing_city").length && jQuery("#billing_city").val()) {
-                address = jQuery("#billing_address_1").val();
-            } else if (jQuery("#calc_shipping_address_1").length && jQuery("#calc_shipping_address_1").val()) {
-                address = jQuery("#calc_shipping_address_1").val();
-            }
-        }
-        return address;
+  }
+  return postcode;
+}
+
+function omnivaInt_getCity() {
+  var city;
+  if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
+    if (jQuery("#shipping_city").length && $("#shipping_city").val()) {
+      city = jQuery("#shipping_city").val();
     }
-    
-function loadTerminalMapping() {
+  } else {
+    if (jQuery("#billing_city").length && jQuery("#billing_city").val()) {
+      city = jQuery("#billing_city").val();
+    } else if (jQuery("#calc_shipping_city").length && jQuery("#calc_shipping_city").val()) {
+      city = jQuery("#calc_shipping_city").val();
+    }
+  }
+  return city;
+}
+
+function omnivaInt_getAddress() {
+  var address;
+  if (jQuery('#ship-to-different-address-checkbox').length && jQuery('#ship-to-different-address-checkbox').is(':checked')) {
+    if (jQuery("#shipping_address_1").length && $("#shipping_address_1").val()) {
+      address = jQuery("#shipping_address_1").val();
+    }
+  } else {
+    if (jQuery("#billing_city").length && jQuery("#billing_city").val()) {
+      address = jQuery("#billing_address_1").val();
+    } else if (jQuery("#calc_shipping_address_1").length && jQuery("#calc_shipping_address_1").val()) {
+      address = jQuery("#calc_shipping_address_1").val();
+    }
+  }
+  return address;
+}
+
+function removeOmnivaIntMap() {
+  if ( typeof tmjs !== 'undefined' && omniva_global_terminals_loading === false ) {
+    var container = document.getElementById(tmjs.containerId);
+    if ( document.body.contains(container) ) {
+      container.remove();
+    }
+
+    var modal = document.getElementById(tmjs.containerId + "_modal");
+    if ( document.body.contains(modal) ) {
+      modal.remove();
+    }
+
+    window['tmjs'] = null;
+  }
+}
+
+function loadOmnivaIntMapping() {
   omniva_global_terminals_loading = true;
   let isModalReady = false;
-  var tmjs = new TerminalMapping(omnivaSettings.api_url + '/api/v1');
-  tmjs
-    .sub('terminal-selected', data => {
-      jQuery('input[name="order[receiver_attributes][parcel_machine_id]"]').val(data.id);
-      jQuery('#order_receiver_attributes_terminal_address').val(data.name + ", " + data.address);
-      jQuery('.receiver_parcel_machine_address_filled').text('');
-      jQuery('.receiver_parcel_machine_address_filled').append('<div class="d-inline-flex" style="margin-top: 5px;">' +
-        '<img class="my-auto mx-0 me-2" src="'+omnivaSettings.api_url + '/default_icon_icon.svg" width="25" height="25">' +
-        '<h5 class="my-auto mx-0">' + data.address + ", " + data.zip + ", " + data.city + '</h5></div>' +
-        '<br><a class="select_parcel_btn select_parcel_href" data-remote="true" href="#">Pakeisti</a>')
-      jQuery('.receiver_parcel_machine_address_filled').show();
-      jQuery('.receiver_parcel_machine_address_notfilled').hide();
+  var tmjs = new OmnivaIntMapping(omnivaSettings.api_url + '/api/v1');
 
-      tmjs.publish('close-map-modal');
-    });
+  tmjs
+  .sub('terminal-selected', data => {
+    jQuery('input[name="order[receiver_attributes][parcel_machine_id]"]').val(data.id);
+    jQuery('#order_receiver_attributes_terminal_address').val(data.name + ", " + data.address);
+    jQuery('.receiver_parcel_machine_address_filled').text('');
+    jQuery('.receiver_parcel_machine_address_filled').append('<div class="d-inline-flex" style="margin-top: 5px;">' +
+    '<img class="my-auto mx-0 me-2" src="'+omnivaSettings.api_url + '/default_icon_icon.svg" width="25" height="25">' +
+    '<h5 class="my-auto mx-0">' + data.address + ", " + data.zip + ", " + data.city + '</h5></div>' +
+    '<br><a class="select_parcel_btn select_parcel_href" data-remote="true" href="#">Pakeisti</a>')
+    jQuery('.receiver_parcel_machine_address_filled').show();
+    jQuery('.receiver_parcel_machine_address_notfilled').hide();
+
+    tmjs.publish('close-map-modal');
+  });
 
   tmjs_country_code = jQuery('#order_receiver_attributes_country_code').val();
   tmjs_identifier = jQuery('#order_receiver_attributes_service_identifier').val();
 
 
   tmjs.setImagesPath(omnivaSettings.api_url + '/');
-  tmjs.init({country_code: omnivaSettings.country , identifier: omnivaSettings.identifier, city: omniva_getCity() , postal_code: omniva_getPostcode(), receiver_address: omniva_getAddress(), max_distance: omnivaSettings.max_distance});
+  tmjs.init({country_code: omnivaSettings.country , identifier: omnivaSettings.identifier, city: omnivaInt_getCity() , postal_code: omnivaInt_getPostcode(), receiver_address: omnivaInt_getAddress(), max_distance: omnivaSettings.max_distance});
 
   window['tmjs'] = tmjs;
 
@@ -111,7 +137,7 @@ function loadTerminalMapping() {
     select_btn: omnivaglobaldata.text_select,
     back_to_list_btn: omnivaglobaldata.text_reset,
     no_information: omnivaglobaldata.text_not_found
-  })
+  });
 
   tmjs.sub('tmjs-ready', function(t) {
     t.map.ZOOM_SELECTED = 8;
@@ -119,6 +145,10 @@ function loadTerminalMapping() {
     jQuery('.spinner-border').hide();
     jQuery('.select_parcel_btn').removeClass('disabled').html(omnivaglobaldata.text_select_terminal);
     omniva_global_terminals_loading = false;
+    
+    var selected_postcode = omnivaInt_getPostcode();
+    t.dom.searchNearest(selected_postcode);
+    t.dom.UI.modal.querySelector('.tmjs-search-input').value = selected_postcode;
   });
 
   jQuery(document).on('click', '.select_parcel_btn', function(e) {
