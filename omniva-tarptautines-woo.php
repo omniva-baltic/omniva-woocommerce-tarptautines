@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Omniva International Shipping
- * Version: 1.0.11
+ * Version: 1.0.12
  * Plugin URI: https://github.com/mijora
  * Description: Official Omniva plugin that combine shipping between different countries
  * Author: Mijora
@@ -10,9 +10,9 @@
  * Domain Path: /languages
  *
  * Requires at least: 5.1
- * Tested up to: 6.0
+ * Tested up to: 6.0.2
  * WC requires at least: 4.0
- * WC tested up to: 6.6.0
+ * WC tested up to: 6.8.2
  * Requires PHP: 7.2
  *
  */
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OMNIVA_GLOBAL_VERSION', '1.0.11');
+define('OMNIVA_GLOBAL_VERSION', '1.0.12');
 define('OMNIVA_GLOBAL_BASENAME', plugin_basename(__FILE__));
 
 register_activation_hook(__FILE__, array( 'OmnivaTarptautinesWoo\Main', 'activated' ) );
