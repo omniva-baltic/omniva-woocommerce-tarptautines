@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.12]
 ### Updated
 - Reworked method display settings
 - Updated Omniva API lib
