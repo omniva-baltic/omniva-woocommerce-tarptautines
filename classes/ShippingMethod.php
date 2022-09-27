@@ -65,6 +65,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
         public function init_form_fields()
         {
             $countries_options = $this->get_countries_options();
+            $currency = get_woocommerce_currency();
             $fields = array(
                 'main_logo' => array(
                     'type' => 'logo'
@@ -284,13 +285,18 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     $fields[$group_name . '_price_type'] = array(
                         'title' => __('Price type', 'omniva_global'),
                         'type' => 'select',
-                        'description' => __('Select price type for services', 'omniva_global'),
+                        'description' => sprintf(__('Select price type for services. Enter the value in the "%s" field below.', 'omniva_global'), __('Value', 'omniva_global')),
                         'options' => array(
                             'fixed' => __('Fixed price', 'omniva_global'),
-                            'addition_percent' => __('Addition %', 'omniva_global'),
-                            'addition_eur' => __('Addition Eur', 'omniva_global'),
-                        )
+                            'addition_percent' => __('Service price with added percentage', 'omniva_global') . ' (%)',
+                            'addition_eur' => __('Service price with added fixed value', 'omniva_global') . ' (' . $currency . ')',
+                        ),
                     );
+                    $this->add_toggle($fields[$group_name . '_price_type'], array(
+                        'group' => $group_name,
+                        'field' => 'price_type',
+                        'show' => 'additional',
+                    ), true); //Toggle display by this field
 
                     $fields[$group_name . '_price_value'] = array(
                         'title' => __('Value', 'omniva_global'),
@@ -301,6 +307,22 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         ),
                         'default' => 5
                     );
+
+                    $fields[$group_name . '_service_price'] = array(
+                        'title' => __('Use service price', 'omniva_global'),
+                        'type' => 'select',
+                        'description' => __('Which service price to use', 'omniva_global'),
+                        'options' => array(
+                            'total_incl_vat' => __('With included tax', 'omniva_global'),
+                            'total_excl_vat' => __('Without tax', 'omniva_global'),
+                        ),
+                        'default' => 'total_excl_vat',
+                    );
+                    $this->add_toggle($fields[$group_name . '_service_price'], array(
+                        'group' => $group_name,
+                        'field' => 'price_type',
+                        'show' => 'additional',
+                    ));
 
                     $fields[$group_name . '_free_shipping'] = array(
                         'title' => __('Free shipping cart amount', 'omniva_global'),
@@ -475,6 +497,24 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             );
 
             $this->form_fields = $fields;
+        }
+
+        public function add_toggle(&$field_data, $params, $this_control = false)
+        {
+            $group_name = (isset($params['group'])) ? esc_attr($params['group']) : 'unknown';
+            $field = (isset($params['field'])) ? esc_attr($params['field']) : 'unknown';
+            $show = (isset($params['show'])) ? esc_attr($params['show']) : '';
+            
+            $field_data['class'] = (!empty($field_data['class'])) ? $field_data['class'] . ' ' : '';
+
+            if ($this_control) {
+                $field_data['class'] .= 'omniva-toggle_controller';
+                $field_data['custom_attributes']['data-group'] = $group_name;
+                $field_data['custom_attributes']['data-field'] = $field;
+                $field_data['custom_attributes']['data-show'] = $show;
+            } else {
+                $field_data['class'] .= 'omniva-toggle_field omniva-toggle-' . $group_name . '-' . $field . ' omniva-toggle_show-' . $show;
+            }
         }
 
         public function generate_hr_html($key, $value)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Added the option to select the price of the carrier to get with or without VAT
+
 ## [1.0.12]
 ### Updated
 - Reworked method display settings
