@@ -231,12 +231,30 @@ class Core {
     public function set_offers_price(&$offers) {
 
         foreach ($offers as $offer) {
-            $offer->org_price = $offer->price;
+            $price = $this->get_offer_price($offer);
+            $offer->org_price = $price;
             
             $type = $this->config[$offer->group . '_price_type'];
             $value = $this->config[$offer->group . '_price_value'];
-            $offer->price = $this->calculate_price($offer->price, $type, $value);
+            $offer->price = $this->calculate_price($price, $type, $value);
         }
+    }
+
+    private function get_offer_price($offer) {
+        $get_price = $this->config[$offer->group . '_service_price'] ?? 'total_excl_vat';
+
+        switch ($get_price) {
+            case 'total_excl_vat':
+                $price = $offer->total_price_excl_vat;
+                break;
+            case 'total_incl_vat':
+                $price = $offer->total_price_with_vat;
+                break;
+            default:
+                $price = $offer->price;
+        }
+
+        return $price;
     }
 
     public function set_offers_name(&$offers) {
