@@ -77,24 +77,24 @@ class Core {
                     $receiver->setContactName("");
                 }
             }
-            $country_id = $package['destination']['country'];
+            $country_code = $package['destination']['country'];
             $receiver->setStreetName($package['destination']['address']);
-            $receiver->setZipcode(Helper::clear_postcode($package['destination']['postcode'], $country_id));
+            $receiver->setZipcode(Helper::clear_postcode($package['destination']['postcode'], $country_code));
             $receiver->setCity($package['destination']['city']);
-            $receiver->setCountryId($this->get_country_id($country_id));
+            $receiver->setCountryId($this->get_country_id($country_code));
             $receiver->setStateCode($package['destination']['state'] ?? null);
             $receiver->setPhoneNumber((string) WC()->checkout->get_value('shipping_phone') ?? WC()->checkout->get_value('billing_phone'));
             return $receiver;
         } elseif (is_object($package)) {
-            $country_id = $package->get_shipping_country();
+            $country_code = $package->get_shipping_country();
             //create from object on order
             $receiver = new Receiver($send_off);
             $receiver->setCompanyName($package->get_shipping_company());
             $receiver->setContactName($package->get_shipping_first_name() . ' ' . $package->get_shipping_last_name());
             $receiver->setStreetName($package->get_shipping_address_1());
-            $receiver->setZipcode(Helper::clear_postcode($package->get_shipping_postcode(), $country_id));
+            $receiver->setZipcode(Helper::clear_postcode($package->get_shipping_postcode(), $country_code));
             $receiver->setCity($package->get_shipping_city());
-            $receiver->setCountryId($this->get_country_id($country_id));
+            $receiver->setCountryId($this->get_country_id($country_code));
             $receiver->setStateCode($package->get_shipping_state());
             $receiver->setPhoneNumber((string)$package->get_billing_phone());
             return $receiver;

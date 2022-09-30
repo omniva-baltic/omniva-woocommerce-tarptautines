@@ -226,7 +226,7 @@ class Order {
                         wp_send_json_success(['status' => 'error', 'msg' => __('Terminal not found', 'omniva_global')]);
                     }
                     $receiver->setShippingType('terminal');
-                    $receiver->setZipcode(Helper::clear_postcode($terminal_obj->zip,$terminal_obj->country_code));
+                    $receiver->setZipcode(Helper::clear_postcode($terminal_obj->zip, $terminal_obj->country_code));
                 }
                 if ($eori) {
                     $receiver->setEori($eori);
@@ -243,7 +243,6 @@ class Order {
                 $api_order->setReference($order->get_order_number());
                 $api_order->setAdditionalServices($services, $cod_amount);
                 $response = $this->api->create_order($api_order);
-                //culog($response,'OmnInt_Order');
                 update_post_meta($id, '_omniva_global_shipment_id', $response->shipment_id);
                 update_post_meta($id, '_omniva_global_cart_id', $response->cart_id);
                 if (!empty($response->insurance)) {
