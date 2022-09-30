@@ -3,6 +3,10 @@
 ## [Unreleased]
 ### Added
 - Added the option to select the price of the carrier to get with or without VAT
+- Added additional service: Insurance
+
+### Fixed
+- Fixed carrier name showing in manifest table
 
 ## [1.0.12]
 ### Updated

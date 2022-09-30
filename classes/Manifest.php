@@ -199,7 +199,7 @@ class Manifest {
         do_action('omniva_admin_manifest_head');
         ?>
 
-        <div class="wrap page-omniva_manifest">
+        <div class="wrap omniva_global page-omniva_manifest">
             
             <img src = "<?php echo plugin_dir_url(__DIR__); ?>assets/images/logo.svg" style="width: 100px;"/>
             <h1><?php _e('International manifest', 'omniva_global'); ?></h1>
@@ -328,6 +328,7 @@ class Manifest {
             }
 
             $order_statuses = wc_get_order_statuses();
+            $carriers = $this->api->get_services();
             ?>
             <ul class="nav nav-tabs">
                 <?php foreach ($this->tab_strings as $tab => $tab_title) : ?>
@@ -362,7 +363,7 @@ class Manifest {
                         <thead>
 
                             <tr class="omniva-filter">
-                                <td class="manage-column column-cb check-column"><?php /*<input type="checkbox" class="check-all" />*/ //Disabled while not working ?></td>
+                                <td class="manage-column column-cb check-column"><?php /* ?><input type="checkbox" class="check-all" /><?php */ //Disabled while not working ?></td>
                                 <th class="manage-column column-order_id">
                                     <input type="text" class="d-inline" name="filter_id" id="filter_id" value="<?php echo $filters['id']; ?>" placeholder="<?php echo __('ID', 'omniva_global'); ?>" aria-label="Order ID filter">
                                 </th>
@@ -379,9 +380,9 @@ class Manifest {
                                 </th>
                                 <th class="column-order_date">
                                 </th>
-                                <th class="manage-column">
+                                <th class="manage-column column-carrier">
                                 </th>
-                                <th class="manage-column">
+                                <th class="manage-column column-barcode">
                                     <input type="text" class="d-inline" name="filter_barcode" id="filter_barcode" value="<?php echo $filters['barcode']; ?>" placeholder="<?php echo __('Barcode', 'omniva_global'); ?>" aria-label="Order barcode filter">
                                 </th>
                                 <th class="manage-column">
@@ -411,8 +412,8 @@ class Manifest {
                                 <th scope="col" class="manage-column"><?php echo __('Customer', 'omniva_global'); ?></th>
                                 <th scope="col" class="column-order_status"><?php echo __('Order Status', 'omniva_global'); ?></th>
                                 <th scope="col" class="column-order_date"><?php echo __('Order Date', 'omniva_global'); ?></th>
-                                <th scope="col" class="manage-column"><?php echo __('Service', 'omniva_global'); ?></th>
-                                <th scope="col" class="manage-column"><?php echo __('Barcode', 'omniva_global'); ?></th>
+                                <th scope="col" class="manage-column column-carrier"><?php echo __('Service', 'omniva_global'); ?></th>
+                                <th scope="col" class="manage-column column-barcode"><?php echo __('Barcode', 'omniva_global'); ?></th>
                                 <th scope="col" class="manage-column"><?php echo __('Manifest ID', 'omniva_global'); ?></th>
                                 <th scope="col" class="column-manifest_date"><?php echo __('Manifest date', 'omniva_global'); ?></th>
                                 <th scope="col" class="manage-column"><?php echo __('Actions', 'omniva_global'); ?></th>
@@ -435,7 +436,7 @@ class Manifest {
                                     </tr>
                                 <?php endif; ?>
                                 <tr class="data-row">
-                                    <th scope="row" class="check-column"><?php /*<input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" />*/ //Disabled while not working ?></th>
+                                    <th scope="row" class="check-column"><?php /* ?><input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" /><?php */ //Disabled while not working ?></th>
                                     <td class="manage-column column-order_id">
                                         <a href="<?php echo $order->get_edit_order_url(); ?>">#<?php echo $order->get_order_number(); ?></a>
                                     </td>
@@ -454,12 +455,21 @@ class Manifest {
                                             <?php echo $order->get_date_created()->format('Y-m-d H:i:s'); ?>
                                         </div>
                                     </td>
-                                    <td class="manage-column">
+                                    <td class="manage-column column-carrier">
                                         <div class="data-grid-cell-content">
-                                            <?php //omniva_terminal_field_display_admin_order_meta($order, false);   ?>
+                                            <?php
+                                            $carrier_code = get_post_meta($order->get_id(), '_omniva_global_service', true);
+                                            $carrier = $this->core->get_service_info($carrier_code, $carriers);
+                                            $carrier_name = $carrier->name ?? '-';
+                                            $carrier_img = $carrier->image ?? false;
+                                            ?>
+                                            <?php if ($carrier_img) : ?>
+                                                <img src="<?php echo esc_url($carrier_img); ?>" alt="<?php echo esc_attr($carrier_name); ?>"/>
+                                            <?php endif; ?>
+                                            <span><?php echo $carrier_name; ?></span>
                                         </div>
                                     </td>
-                                    <td class="manage-column">
+                                    <td class="manage-column column-barcode">
                                         <div class="data-grid-cell-content">
                                             <?php $barcode = $order->get_meta('_omniva_global_tracking_numbers'); ?>
                                             <?php $shipment_id = $order->get_meta('_omniva_global_shipment_id'); ?>
