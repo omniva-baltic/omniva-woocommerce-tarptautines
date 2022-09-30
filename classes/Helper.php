@@ -52,8 +52,8 @@ class Helper {
         return $url;
     }
 
-    static function additional_services() {
-        return [
+    static function additional_services($get_service = false) {
+        $services = array(
             'cod' => __('C.O.D.', 'omniva_global'),
             'return' => __('Return', 'omniva_global'),
             'ukd' => __('U.K.D', 'omniva_global'),
@@ -61,7 +61,9 @@ class Helper {
             'insurance' => __('Insurance', 'omniva_global'),
             'carry_service' => __('Carry service', 'omniva_global'),
             'fragile' => __('Fragile', 'omniva_global')
-        ];
+        );
+
+        return ($get_service && isset($services[$get_service])) ? $services[$get_service] : $services;
     }
 
     static function omniva_get_categories() {
@@ -116,6 +118,16 @@ class Helper {
         }
 
         return $children;
+    }
+
+    static function clear_postcode($postcode, $country) {
+        return $postcode; //This function is not needed yet
+        
+        if ($country == 'LV') {
+            //It is not clear if it will be needed
+        }
+
+        return preg_replace('/[^0-9]/', '', $postcode);
     }
 
 }
