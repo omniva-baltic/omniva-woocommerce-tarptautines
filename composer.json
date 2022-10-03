@@ -13,7 +13,9 @@
         }
     ],
     "require": {
-        "omniva/api-lib" : "dev-master"
+        "omniva/api-lib" : "dev-master",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.3"
     },
     "repositories": [
         {

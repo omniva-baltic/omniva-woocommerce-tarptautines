@@ -34,21 +34,13 @@ class Helper {
         return get_admin_url() . 'admin.php?page=wc-settings&tab=shipping&section=' . self::get_prefix();
     }
 
-    static function print_label_url($shipment_id) {
-        return get_admin_url() . 'admin.php?omniva_global_label=' . $shipment_id;
-    }
-
-    static function print_manifest_labels_url($cart_id = false) {
-        $url = self::generate_manifest_url($cart_id);
-        $url .= '&labels=1';
+    static function generate_outside_action_url($action, $action_value) {
+        $url = admin_url('admin.php?omniva_global_action=' . esc_attr($action) . '&action_value=' . esc_attr($action_value));
         return $url;
     }
 
-    static function generate_manifest_url($cart_id = false) {
-        $url = get_admin_url() . 'admin.php?omniva_global_manifest';
-        if ($cart_id) {
-            $url .= '=' . $cart_id;
-        }
+    static function generate_manifest_page_url($cart_id = false) {
+        $url = admin_url('admin.php?page=omniva_global_manifest');
         return $url;
     }
 
