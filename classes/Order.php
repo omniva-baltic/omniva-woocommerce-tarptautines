@@ -3,7 +3,6 @@
 namespace OmnivaTarptautinesWoo;
 
 use OmnivaTarptautinesWoo\Helper;
-use OmnivaApi\Order as ApiOrder;
 use OmnivaTarptautinesWoo\Terminal;
 
 class Order {
@@ -79,7 +78,7 @@ class Order {
             </p>
             <?php if ($label_ready === true): ?>
                 <p>
-                    <a href ="<?php echo Helper::print_label_url($shipment_id); ?>" target = "_blank" class="button button-primary"><?php _e('Print label', 'omniva_global'); ?></a>
+                    <a href ="<?php echo Helper::generate_outside_action_url('print_label', $shipment_id); ?>" target = "_blank" class="button button-primary"><?php _e('Print label', 'omniva_global'); ?></a>
                 </p>
             <?php endif; ?>
             <?php if (!$manifest_date): ?>    
@@ -189,71 +188,20 @@ class Order {
     public function print_label($shipment_id) {
         if (current_user_can( 'edit_shop_orders' ) && is_admin() && isset($_GET['omniva_global_label'])) {
             $shipment_id = $_GET['omniva_global_label'];
-            try {
-                $response = $this->api->get_label($shipment_id);
-                $pdf = base64_decode($response->base64pdf);
-                header('Content-type:application/pdf');
-                header('Content-disposition: inline; filename="'.$shipment_id.'"');
-                header('content-Transfer-Encoding:binary');
-                header('Accept-Ranges:bytes');
-                echo $pdf;
-                exit;
-            } catch (\Exception $e) {
-                echo $e->getMessage();
-                exit;
-            }
+            $this->core->print_label($shipment_id);
         }
     }
 
     public function create_order() {
-        $id = $_POST['order_id'] ?? 0;
-        $services = $_POST['services'] ?? [];
-        $terminal = $_POST['terminal'] ?? 0;
-        $cod_amount = $_POST['cod_amount'] ?? false;
-        $eori = $_POST['eori'] ?? false;
-        $hs = $_POST['hs'] ?? false;
-        if ($id && $order = wc_get_order($id)) {
-            try {
-                if ($cod_amount == false || empty($cod_amount)) {
-                    $cod_amount = get_post_meta($id, '_order_total', true);
-                }
-                $service_code = get_post_meta($id, '_omniva_global_service', true);
-                $sender = $this->core->get_sender();
-                $receiver = $this->core->get_receiver($order);
-                if ($terminal) {
-                    $terminal_obj = Terminal::getById($terminal);
-                    if (!$terminal_obj || !$terminal_obj->zip) {
-                        wp_send_json_success(['status' => 'error', 'msg' => __('Terminal not found', 'omniva_global')]);
-                    }
-                    $receiver->setShippingType('terminal');
-                    $receiver->setZipcode(Helper::clear_postcode($terminal_obj->zip, $terminal_obj->country_code));
-                }
-                if ($eori) {
-                    $receiver->setEori($eori);
-                }
-                if ($hs) {
-                    $receiver->setHsCode($hs);
-                }
-                $api_order = new ApiOrder();
-                $api_order->setSender($sender);
-                $api_order->setReceiver($receiver);
-                $api_order->setServiceCode($service_code);
-                $api_order->setParcels($this->core->get_parcels($order));
-                $api_order->setItems($this->core->get_items($order));
-                $api_order->setReference($order->get_order_number());
-                $api_order->setAdditionalServices($services, $cod_amount);
-                $response = $this->api->create_order($api_order);
-                update_post_meta($id, '_omniva_global_shipment_id', $response->shipment_id);
-                update_post_meta($id, '_omniva_global_cart_id', $response->cart_id);
-                if (!empty($response->insurance)) {
-                    update_post_meta($id, '_omniva_global_insurance', esc_sql($response->insurance));
-                }
-                wp_send_json_success(['status' => 'ok']);
-            } catch (\Exception $e) {
-                wp_send_json_success(['status' => 'error', 'msg' => $e->getMessage()]);
-            }
-        }
-        wp_send_json_success(['status' => 'error', 'msg' => __('Order not found', 'omniva_global')]);
+        $status = $this->core->register_order(array(
+            'wc_order_id' => $_POST['order_id'] ?? 0,
+            'services' => $_POST['services'] ?? [],
+            'terminal' => $_POST['terminal'] ?? 0,
+            'cod_amount' => $_POST['cod_amount'] ?? false,
+            'eori_number' => $_POST['eori'] ?? false,
+            'hs_code' => $_POST['hs'] ?? false,
+        ));
+        wp_send_json_success($status);
     }
 
     public function load_order() {
@@ -274,19 +222,9 @@ class Order {
 
     public function delete_order() {
         $id = $_POST['order_id'] ?? 0;
-        if ($id && $post = get_post($id)) {
-            try {
-                $shipment_id = get_post_meta($post->ID, '_omniva_global_shipment_id', true);
-                $this->api->cancel_order($shipment_id);
-                delete_post_meta($id, '_omniva_global_shipment_id');
-                delete_post_meta($id, '_omniva_global_cart_id');
-                delete_post_meta($id, '_omniva_global_tracking_numbers');
-                wp_send_json_success(['status' => 'ok']);
-            } catch (\Exception $e) {
-                wp_send_json_success(['status' => 'error', 'msg' => $e->getMessage()]);
-            }
-        }
-        wp_send_json_success(['status' => 'error', 'msg' => __('Order not found', 'omniva_global')]);
+
+        $status = $this->core->remove_order($id);
+        wp_send_json_success($status);
     }
 
     public function is_omniva_order($post) {

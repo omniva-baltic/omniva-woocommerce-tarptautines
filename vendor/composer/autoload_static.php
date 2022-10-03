@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit20cf8cbc87703fbbdae362ced6e3d77f
 {
     public static $prefixLengthsPsr4 = array (
+        's' => 
+        array (
+            'setasign\\Fpdi\\' => 14,
+        ),
         'O' => 
         array (
             'OmnivaTarptautinesWoo\\' => 22,
@@ -15,6 +19,10 @@ class ComposerStaticInit20cf8cbc87703fbbdae362ced6e3d77f
     );
 
     public static $prefixDirsPsr4 = array (
+        'setasign\\Fpdi\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/setasign/fpdi/src',
+        ),
         'OmnivaTarptautinesWoo\\' => 
         array (
             0 => __DIR__ . '/../..' . '/classes',
@@ -27,6 +35,7 @@ class ComposerStaticInit20cf8cbc87703fbbdae362ced6e3d77f
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

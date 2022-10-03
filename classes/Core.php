@@ -10,6 +10,8 @@ use OmnivaApi\Sender;
 use OmnivaApi\Receiver;
 use OmnivaApi\Parcel;
 use OmnivaApi\Item;
+use OmnivaApi\Order as ApiOrder;
+use setasign\Fpdi\Fpdi;
 
 class Core {
 
@@ -18,6 +20,17 @@ class Core {
 
     public function __construct() {
         $this->api = new Api($this->get_config());
+    }
+
+    public function show_admin_notice($msg_text, $msg_type = 'info', $dismissible = true) {
+        add_action('admin_notices', function() use ($msg_text, $msg_type, $dismissible) {
+            $additional_classes = '';
+            if ($dismissible) {
+                $additional_classes = ' is-dismissible';
+            }
+
+            echo '<div class="notice notice-' . $msg_type . $additional_classes . '"><p>' . $msg_text . '</p></div>';
+        });
     }
 
     public function get_api() {
@@ -512,5 +525,250 @@ class Core {
         }
 
         return false;
+    }
+
+    public function get_wc_order($wc_order_id) {
+        if (!$wc_order_id) {
+            throw new \Exception(__('Order ID not received', 'omniva_global'));
+        }
+
+        $wc_order = wc_get_order($wc_order_id);
+        if (!$wc_order) {
+            throw new \Exception(__('Order not found', 'omniva_global'));
+        }
+
+        return $wc_order;
+    }
+
+    public function register_order($params) {
+        $wc_order_id = $params['wc_order_id'] ?? 0;
+        $allow_regenarate = $params['regenerate'] ?? false;
+        $services = $params['services'] ?? [];
+        $terminal = $params['terminal'] ?? 0;
+        $cod_amount = $params['cod_amount'] ?? false;
+        $eori_number = $params['eori_number'] ?? false;
+        $hs_code = $params['hs_code'] ?? false;
+
+        try {
+            $wc_order = $this->get_wc_order($wc_order_id);
+
+            if (!$allow_regenarate && !empty(get_post_meta($wc_order_id, '_omniva_global_shipment_id', true))) {
+                return ['status' => 'error', 'msg' => __('The shipment is already registered', 'omniva_global')];
+            } 
+
+            if (empty($cod_amount)) {
+                $cod_amount = get_post_meta($wc_order_id, '_order_total', true);
+            }
+            $service_code = get_post_meta($wc_order_id, '_omniva_global_service', true);
+
+            $sender = $this->get_sender();
+            $receiver = $this->get_receiver($wc_order);
+
+            if ($terminal) {
+                $terminal_obj = Terminal::getById($terminal);
+                if (!$terminal_obj || !$terminal_obj->zip) {
+                    return ['status' => 'error', 'msg' => __('Terminal not found', 'omniva_global')];
+                }
+                $receiver->setShippingType('terminal');
+                $receiver->setZipcode(Helper::clear_postcode($terminal_obj->zip, $terminal_obj->country_code));
+            }
+            if ($eori_number) {
+                $receiver->setEori($eori_number);
+            }
+            if ($hs_code) {
+                $receiver->setHsCode($hs_code);
+            }
+
+            $api_order = new ApiOrder();
+            $api_order->setSender($sender);
+            $api_order->setReceiver($receiver);
+            $api_order->setServiceCode($service_code);
+            $api_order->setParcels($this->get_parcels($wc_order));
+            $api_order->setItems($this->get_items($wc_order));
+            $api_order->setReference($wc_order->get_order_number());
+            $api_order->setAdditionalServices($services, $cod_amount);
+            $response = $this->api->create_order($api_order);
+
+            update_post_meta($wc_order_id, '_omniva_global_shipment_id', $response->shipment_id);
+            update_post_meta($wc_order_id, '_omniva_global_cart_id', $response->cart_id);
+            if (!empty($response->insurance)) {
+                update_post_meta($wc_order_id, '_omniva_global_insurance', esc_sql($response->insurance));
+            }
+
+            return ['status' => 'ok'];
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function print_label($shipment_id) {
+        try {
+            $response = $this->api->get_label($shipment_id);
+            $pdf = base64_decode($response->base64pdf);
+            $this->generate_pdf($shipment_id, $pdf);
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
+        exit;
+    }
+
+    public function print_labels($shipments_ids) {
+        try {
+            $temp_dir = $this->get_temp_dir();
+            $labels = array();
+            foreach ($shipments_ids as $order_id => $shipment_id) {
+                try {
+                    $response = $this->api->get_label($shipment_id);
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                if (!empty($response->tracking_numbers)) {
+                    update_post_meta($order_id, '_omniva_global_tracking_numbers', $response->tracking_numbers);
+                }
+
+                $pdf_dir = $temp_dir . '/' . $shipment_id . '.pdf';
+                $pdf = fopen($pdf_dir, 'w');
+                fwrite($pdf, base64_decode($response->base64pdf));
+                fclose ($pdf);
+                $labels[] = $pdf_dir;
+            }
+
+            if (empty($labels)) {
+                return ['status' => 'error', 'msg' => __('Failed to get labels', 'omniva_global')];
+            }
+            $merged_file = base64_decode($this->merge_pdfs($labels));
+
+            foreach ($labels as $label) {
+                unlink($label);
+            }
+
+            $this->generate_pdf('Omniva_global_labels_' . current_time('Ymd_His') . '.pdf', $merged_file);
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'msg' => $e->getMessage()];
+        }
+        exit;
+    }
+
+    private function generate_pdf($file_name, $file_content) {
+        header('Content-type:application/pdf');
+        header('Content-disposition: inline; filename="' . $file_name . '"');
+        header('content-Transfer-Encoding:binary');
+        header('Accept-Ranges:bytes');
+        echo $file_content;
+        exit;
+    }
+
+    private function merge_pdfs($pdf_files) {
+        $pdf = new Fpdi();
+
+        foreach ( $pdf_files as $file ) {
+            $page_count = $pdf->setSourceFile($file);
+            for ( $page_no = 1; $page_no <= $page_count; $page_no++ ) {
+                $template_id = $pdf->importPage($page_no);
+                $pdf->AddPage('P');
+                $pdf->useTemplate($template_id, ['adjustPageSize' => true]);
+            }
+        }
+
+        return base64_encode($pdf->Output('S'));
+    }
+
+    public function remove_order($wc_order_id) {
+        try {
+            $wc_order = $this->get_wc_order($wc_order_id);
+            
+            $shipment_id = get_post_meta($wc_order_id, '_omniva_global_shipment_id', true);
+            $this->api->cancel_order($shipment_id);
+            delete_post_meta($wc_order_id, '_omniva_global_shipment_id');
+            delete_post_meta($wc_order_id, '_omniva_global_cart_id');
+            delete_post_meta($wc_order_id, '_omniva_global_tracking_numbers');
+            delete_post_meta($wc_order_id, '_omniva_global_insurance');
+
+            return ['status' => 'ok'];
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function generate_manifests($carts_ids) {
+        try {
+            $temp_dir = $this->get_temp_dir();
+            $manifests = array();
+            foreach ($carts_ids as $cart_id) {
+                $response = $this->api->generate_manifest($cart_id);
+                if (empty($response->manifest)) {
+                    continue;
+                }
+                $this->update_order_meta_by_cart_id($cart_id);
+                $pdf_dir = $temp_dir . '/' . $cart_id . '.pdf';
+                $pdf = fopen($pdf_dir, 'w');
+                fwrite($pdf, base64_decode($response->manifest));
+                fclose ($pdf);
+                $manifests[] = $pdf_dir;
+            }
+
+            if (empty($manifests)) {
+                throw new \Exception(__('Failed to get manifests', 'omniva_global'));
+            }
+
+            $merged_file = base64_decode($this->merge_pdfs($manifests));
+
+            foreach ($manifests as $manifest) {
+                unlink($manifest);
+            }
+
+            $this->generate_pdf('Omniva_global_manifests_' . current_time('Ymd_His') . '.pdf', $merged_file);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function generate_latest_manifest() {
+        try {
+            $response = $this->api->generate_latest_manifest();
+            if (empty($response->manifest)) {
+                throw new \Exception(__('Failed to get manifest', 'omniva_global'));
+            }
+            $this->update_order_meta_by_cart_id($response->cart_id);
+            $pdf = base64_decode($response->manifest);
+            $this->generate_pdf($response->cart_id, $pdf);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+        exit;
+    }
+
+    private function update_order_meta_by_cart_id($cart_id) {
+        $args = array(
+            'limit' => -1,
+            'return' => 'ids',
+            'meta_key' => '_omniva_global_cart_id',
+            'meta_value' => $cart_id,
+            'meta_compare' => '='
+        );
+        
+        $results = wc_get_orders($args);
+        if (empty($results)) {
+            return false;;
+        }
+        
+        foreach ($results as $order_id) {
+            $date = get_post_meta($order_id, '_omniva_global_manifest_date', true );
+            if (!$date) {
+                update_post_meta($order_id, '_omniva_global_manifest_date', date('Y-m-d H:i:s') );
+            }
+        }
+        
+        return true;
+    }
+
+    public function get_temp_dir() {
+        $temp_dir = OMNIVA_GLOBAL_PLUGIN_DIR . 'var/temp';
+        if (!is_dir($temp_dir)) {
+            mkdir($temp_dir, 0755, true);
+        }
+
+        return $temp_dir;
     }
 }

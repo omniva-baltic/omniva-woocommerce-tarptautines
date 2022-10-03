@@ -38,62 +38,9 @@ class Manifest {
         add_action('admin_menu', array($this, 'register_omniva_manifest_menu_page'));
         add_action('omniva_admin_manifest_head', array($this, 'omniva_global_admin_manifest_scripts'));
         add_filter('woocommerce_order_data_store_cpt_get_orders_query', array($this, 'handle_custom_omniva_query_var'), 10, 2);
-        add_action('init', array($this, 'generate_manifest'));
-    }
-    
-    public function generate_manifest() {
-        if (current_user_can( 'edit_shop_orders' ) && is_admin() && isset($_GET['omniva_global_manifest'])) {
-            try {
-                $labels = false;
-                if (isset($_GET['labels']) && $_GET['labels'] == 1) {
-                    $labels = true;
-                }
-                if (!empty($_GET['omniva_global_manifest'])){
-                    $response = $this->api->generate_manifest($_GET['omniva_global_manifest']);
-                } else {
-                    $response = $this->api->generate_latest_manifest();
-                }
-
-                if ($labels && empty($response->labels)) {
-                    throw new \Exception(__('Failed to get labels', 'omniva_global'));
-                }
-                if (!$labels && empty($response->manifest)) {
-                    throw new \Exception(__('Failed to get manifest', 'omniva_global'));
-                }
-                
-                $orders = get_posts(array(
-                    'numberposts'   => -1,
-                    'post_type'     => 'shop_order',
-                    'post_status'   => 'any',
-                    'meta_query'        => array(
-                        array(
-                            'key'       => '_omniva_global_cart_id',
-                            'value'     => $response->cart_id
-                        )
-                    )
-                ));
-                foreach ($orders as $order){
-                    $date = get_post_meta($order->ID, '_omniva_global_manifest_date', true );
-                    if (!$date) {
-                        update_post_meta($order->ID, '_omniva_global_manifest_date', date('Y-m-d H:i:s') );
-                    }
-                }
-                if ($labels) {
-                    $pdf = base64_decode($response->labels);
-                } else {
-                    $pdf = base64_decode($response->manifest);
-                }
-                header('Content-type:application/pdf');
-                header('Content-disposition: inline; filename="'.$response->cart_id.'"');
-                header('content-Transfer-Encoding:binary');
-                header('Accept-Ranges:bytes');
-                echo $pdf;
-                exit;
-            } catch (\Exception $e) {
-                echo $e->getMessage();
-                exit;
-            }
-        }
+        add_action('init', array($this, 'execute_single_action'));
+        add_action('init', array($this, 'execute_mass_action'));
+        add_action('init', array($this, 'execute_outside_action'));
     }
 
     public function omniva_global_admin_manifest_scripts() {
@@ -101,6 +48,7 @@ class Manifest {
         wp_enqueue_style('bootstrap-datetimepicker', plugin_dir_url(__DIR__) . 'assets/js/datetimepicker/bootstrap-datetimepicker.min.css');
         wp_enqueue_script('moment', plugin_dir_url(__DIR__) . 'assets/js/moment.min.js', array(), null, true);
         wp_enqueue_script('bootstrap-datetimepicker', plugin_dir_url(__DIR__) . 'assets/js/datetimepicker/bootstrap-datetimepicker.min.js', array('jquery', 'moment'), null, true);
+        wp_enqueue_script('omniva_global_admin_manifest', plugin_dir_url(__DIR__) . 'assets/js/manifest.js', array('jquery'), false, true);
     }
 
     public function register_omniva_manifest_menu_page() {
@@ -114,6 +62,239 @@ class Manifest {
                 //plugins_url('omniva-woocommerce/images/icon.png'),
                 1
         );
+    }
+
+    public function execute_outside_action() {
+        if (!current_user_can( 'edit_shop_orders' ) || !is_admin() || !isset($_GET['omniva_global_action'])) {
+            return;
+        }
+
+        try {
+            if (empty($_GET['action_value'])) {
+                throw new \Exception(__('Not received action value', 'omniva_global'));
+            }
+            if ($_GET['omniva_global_action'] == 'print_label') {
+                $this->core->print_label(esc_attr($_GET['action_value']));
+            }
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
+        exit;
+    }
+
+    public function execute_single_action() {
+        if (!current_user_can('edit_shop_orders') || !is_admin() || !isset($_GET['page']) || $_GET['page'] != 'omniva-global-manifest') {
+            return;
+        }
+
+        try {
+            if (isset($_POST['print_label'])) {
+                $this->core->print_label(esc_attr($_POST['print_label']));
+            }
+            if (isset($_POST['print_manifest'])) {
+                $this->core->generate_manifests(array(esc_attr($_POST['print_manifest'])));
+            }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            $msg .= '<br/><a href="javascript:window.location.href=window.location.href">' . __('Refresh page', 'omniva_global') . '</a>';
+            $this->core->show_admin_notice($msg, 'error');
+        }
+    }
+
+    public function execute_mass_action() {
+        if (!current_user_can('edit_shop_orders') || !is_admin() || !isset($_GET['page']) || $_GET['page'] != 'omniva-global-manifest') {
+            return;
+        }
+
+        try {
+            $selected_orders = (!empty($_POST['orders'])) ? $_POST['orders'] : array();
+            if (isset($_POST['generate_labels'])) {
+                $result = $this->mass_generate_labels($selected_orders);
+                $this->show_label_generation_result_notice($result);
+            }
+            if (isset($_POST['print_labels'])) {
+                $this->mass_print_labels($selected_orders);
+            }
+            if (isset($_POST['generate_manifest'])) {
+                $this->mass_generate_manifest($selected_orders);
+            }
+            if (isset($_POST['latest_manifest'])) {
+                $this->mass_get_latest_manifest();
+            }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            $msg .= '<br/><a href="javascript:window.location.href=window.location.href">' . __('Refresh page', 'omniva_global') . '</a>';
+            $this->core->show_admin_notice($msg, 'error');
+        }
+    }
+
+    private function mass_generate_labels($orders_ids) {
+        if (empty($orders_ids)) {
+            throw new \Exception(__('Selected orders not received', 'omniva_global'));
+        }
+
+        $count_generated = 0;
+        $failed_orders = array();
+        foreach ($orders_ids as $order_id) {
+            $order = \wc_get_order($order_id);
+            if (empty($order)) {
+                $failed_orders[$order_id] = __('Unable to get WooCommerce order', 'omniva_global');
+                continue;
+            }
+
+            $terminal_id = $order->get_meta('_omniva_global_terminal_id');
+            
+            $status = $this->core->register_order(array(
+                'wc_order_id' => $order_id,
+                'services' => array(),
+                'terminal' => (!empty($terminal_id)) ? $terminal_id : 0,
+                'cod_amount' => false,
+                'eori_number' => false,
+                'hs_code' => false,
+            ));
+
+            if ($status['status'] != 'ok') {
+                if (!isset($status['msg'])) {
+                    $status['msg'] = __('Unknown error', 'omniva_global');
+                }
+                $failed_orders[$order_id] = $status['msg'];
+                continue;
+            }
+
+            $count_generated++;
+        }
+
+        return array(
+            'total' => count($orders_ids),
+            'success' => $count_generated,
+            'failed_orders' => $failed_orders,
+        );
+    }
+
+    private function show_label_generation_result_notice($result) {
+        $msg = '';
+        $type = 'warning';
+        if (!empty($result['failed_orders'])) {
+            $msg .= __('Failed to generate labels for these orders', 'omniva_global') . ':<br/>';
+            $msg .= $this->build_failed_orders_list($result['failed_orders']);
+        } else if (empty($result['success'])) {
+            $msg .= __('A label could not be generated for any order', 'omniva_global');
+            $type = 'error';
+        } else if ($result['total'] > $result['success']) {
+            $msg .= __('Not all orders were successful in generating labels. Unknown error.', 'omniva_global');   
+        } else {
+            $msg .= __('Labels successfully generated for all orders', 'omniva_global');
+            $type = 'success';
+        }
+
+        $msg .= '<br/><a href="javascript:window.location.href=window.location.href">' . __('Refresh page', 'omniva_global') . '</a>';
+
+        if (!empty($msg)) {
+            $this->core->show_admin_notice($msg, $type);
+        }
+    }
+
+    private function mass_print_labels($orders_ids) {
+        if (empty($orders_ids)) {
+            throw new \Exception(__('Selected orders not received', 'omniva_global'));
+        }
+
+        $shipments_ids = array();
+        foreach ($orders_ids as $order_id) {
+            $order = \wc_get_order($order_id);
+            if (empty($order)) {
+                continue;
+            }
+
+            $shipments_ids[$order_id] = $order->get_meta('_omniva_global_shipment_id');
+        }
+        
+        $status = $this->core->print_labels($shipments_ids);
+        if ($status['status'] != 'ok') {
+            if (!isset($status['msg'])) {
+                $status['msg'] = __('Unknown error', 'omniva_global');
+            }
+
+            throw new \Exception($status['msg']);
+        }
+    }
+
+    private function mass_generate_manifest($orders_ids) {
+        if (empty($orders_ids)) {
+            throw new \Exception(__('Selected orders not received', 'omniva_global'));
+        }
+
+        $carts_ids = array();
+        foreach ($orders_ids as $order_id) {
+            $order = \wc_get_order($order_id);
+            if (empty($order)) {
+                continue;
+            }
+
+            $cart_id = $order->get_meta('_omniva_global_cart_id');
+            if (!in_array($cart_id, $carts_ids)) {
+                $carts_ids[] = $cart_id;
+            }
+        }
+
+        $status = $this->core->generate_manifests($carts_ids);
+        if ($status['status'] != 'ok') {
+            if (!isset($status['msg'])) {
+                $status['msg'] = __('Unknown error', 'omniva_global');
+            }
+
+            throw new \Exception($status['msg']);
+        }
+    }
+
+    private function mass_get_latest_manifest() {
+        $this->core->generate_latest_manifest();
+    }
+
+    private function build_failed_orders_list($failed_orders) {
+        $rows = '';
+
+        foreach ($failed_orders as $order_id => $msg) {
+            $order = wc_get_order($order_id);
+            if (!empty($order)) {
+                $order_id = $order->get_order_number();
+            }
+            $rows .= '<b>' . $order_id . ':</b> ' . $msg . '<br/>';
+        }
+
+        return $rows;
+    }
+
+    private function build_failed_orders_table($failed_orders, $add_style = true) {
+        $style = '';
+        $header = '<tr><th>' . __('Order ID', 'omniva_global') . '</th><th>' . __('Problem', 'omniva_global') . '</th>';
+        $rows = '';
+        
+        foreach ($failed_orders as $order_id => $msg) {
+            $order = wc_get_order($order_id);
+            if (!empty($order)) {
+                $order_id = $order->get_order_number();
+            }
+            $rows .= '<tr><td>' . $order_id . '</td><td>' . $msg . '</td>';
+        }
+
+        if ($add_style) {
+            $style .= '<style>
+                table.omniva-notice-table, .omniva-notice-table th, .omniva-notice-table td {
+                    border: 1px solid black;
+                    border-collapse: collapse;
+                    border-color: #f7a690;
+                }
+                table.omniva-notice-table {
+                    margin-top: 5px;
+                }
+                .omniva-notice-table th, .omniva-notice-table td {
+                    padding: 2px 5px;
+                }
+            </style>';
+        }
+
+        return $style . '<table class="omniva-notice-table">' . $header . $rows . '</table>';
     }
 
     public function handle_custom_omniva_query_var($query, $query_vars) {
@@ -345,17 +526,11 @@ class Manifest {
                     </div>
                 </div>
             <?php endif; ?>
-            <?php if ($thereIsOrders) : ?>
-                <div class="mass-print-container">
-                    <a title="<?php echo __('Generate latest manifest', 'omniva_global'); ?>" href="<?php echo Helper::generate_manifest_url();?>" target ="_blank" class="generate_manifest button action">
-                        <?php echo __('Generate latest manifest', 'omniva_global'); ?>
-                    </a>
-                    <a title="<?php echo __('Generate and print manifest labels', 'omniva_global'); ?>" href="<?php echo Helper::print_manifest_labels_url();?>" target ="_blank" class="generate_manifest button action">
-                        <?php echo __('Generate and print manifest labels', 'omniva_global'); ?>
-                    </a>
-                </div>
-            <?php endif; ?>
-
+            <?php
+            if ($thereIsOrders) {
+                $this->render_table_mass_action_buttons();
+            }
+            ?>
             <div class="table-container">
                 <form id="filter-form" class="" action="<?php echo $this->make_link(array('action' => $action)); ?>" method="POST">
                     <?php wp_nonce_field('omniva_global_labels', 'omniva_global_labels_nonce'); ?>
@@ -363,7 +538,7 @@ class Manifest {
                         <thead>
 
                             <tr class="omniva-filter">
-                                <td class="manage-column column-cb check-column"><?php /* ?><input type="checkbox" class="check-all" /><?php */ //Disabled while not working ?></td>
+                                <td class="manage-column column-cb check-column"><input type="checkbox" class="check-all" /></td>
                                 <th class="manage-column column-order_id">
                                     <input type="text" class="d-inline" name="filter_id" id="filter_id" value="<?php echo $filters['id']; ?>" placeholder="<?php echo __('ID', 'omniva_global'); ?>" aria-label="Order ID filter">
                                 </th>
@@ -416,7 +591,7 @@ class Manifest {
                                 <th scope="col" class="manage-column column-barcode"><?php echo __('Barcode', 'omniva_global'); ?></th>
                                 <th scope="col" class="manage-column"><?php echo __('Manifest ID', 'omniva_global'); ?></th>
                                 <th scope="col" class="column-manifest_date"><?php echo __('Manifest date', 'omniva_global'); ?></th>
-                                <th scope="col" class="manage-column"><?php echo __('Actions', 'omniva_global'); ?></th>
+                                <th scope="col" class="manage-column column-actions"><?php echo __('Actions', 'omniva_global'); ?></th>
                             </tr>
 
                         </thead>
@@ -436,7 +611,7 @@ class Manifest {
                                     </tr>
                                 <?php endif; ?>
                                 <tr class="data-row">
-                                    <th scope="row" class="check-column"><?php /* ?><input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" /><?php */ //Disabled while not working ?></th>
+                                    <th scope="row" class="check-column"><input type="checkbox" name="items[]" class="manifest-item" value="<?php echo $order->get_id(); ?>" /></th>
                                     <td class="manage-column column-order_id">
                                         <a href="<?php echo $order->get_edit_order_url(); ?>">#<?php echo $order->get_order_number(); ?></a>
                                     </td>
@@ -493,19 +668,21 @@ class Manifest {
                                             <?php echo $manifest_date; ?>
                                         </div>
                                     </td>
-                                    <td class="manage-column">
+                                    <td class="manage-column column-actions">
                                         <?php if ($barcode && $shipment_id) : ?>
-                                        <a href="<?php echo Helper::print_label_url($shipment_id);?>" target = "_blank" class="button action">
-                                            <?php echo __('Print label', 'omniva_global'); ?>
-                                        </a>
+                                            <button type="submit" name="print_label" value="<?php echo esc_attr($shipment_id); ?>" class="button action">
+                                                <?php echo __('Print label', 'omniva_global'); ?>
+                                            </button>
+                                        <?php endif; ?>
+                                        <?php if ($barcode && $cart_id && !$manifest_date) : ?>
+                                            <button type="submit" name="print_manifest" value="<?php echo esc_attr($cart_id); ?>" class="button action">
+                                                <?php echo __('Generate manifest', 'omniva_global'); ?>
+                                            </button>
                                         <?php endif; ?>
                                         <?php if ($manifest_date && $cart_id) : ?>
-                                        <a href="<?php echo Helper::print_manifest_labels_url($cart_id);?>" target = "_blank" class="button action">
-                                            <?php echo __('Print labels', 'omniva_global'); ?>
-                                        </a>
-                                        <a href="<?php echo Helper::generate_manifest_url($cart_id);?>" target = "_blank" class="button action">
-                                            <?php echo __('Print manifest', 'omniva_global'); ?>
-                                        </a>
+                                            <button type="submit" name="print_manifest" value="<?php echo esc_attr($cart_id); ?>" class="button action">
+                                                <?php echo __('Print manifest', 'omniva_global'); ?>
+                                            </button>
                                         <?php endif; ?>
                                         <?php if ($shipment_id && !$barcode && !$manifest_date) : ?>
                                             <span class="no-results"><?php _e('Preparing...', 'omniva_global'); ?></span>
@@ -579,6 +756,50 @@ class Manifest {
                 });
             </script>
             <?php
+        }
+
+        private function render_table_mass_action_buttons() {
+            ?>
+            <div class="mass-print-container">
+                <form method="post" action="" onsubmit="omniva_global_get_selected_orders(this)" class="inline">
+                    <?php echo $this->build_mass_action_button(array(
+                        'title' => __('Generate labels', 'omniva_global'),
+                        'name' => 'generate_labels'
+                    )); ?>
+                    <?php echo $this->build_mass_action_button(array(
+                        'title' => __('Print labels', 'omniva_global'),
+                        'name' => 'print_labels'
+                    )); ?>
+                    <?php echo $this->build_mass_action_button(array(
+                        'title' => __('Generate manifests', 'omniva_global'),
+                        'name' => 'generate_manifest'
+                    )); ?>
+                    <?php echo $this->build_mass_action_button(array(
+                        'title' => __('Print latest manifest', 'omniva_global'),
+                        'name' => 'latest_manifest'
+                    )); ?>
+                </form>
+            </div>
+            <?php
+        }
+
+        private function build_mass_action_button($params) {
+            if (!is_array($params)) {
+                return '';
+            }
+
+            $title = $params['title'] ?? '[title]';
+            $name = $params['name'] ?? '';
+            $id = $params['id'] ?? '';
+            //$url = $params['url'] ?? '';
+
+            ob_start();
+            ?>
+            <button type="submit" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($name); ?>" class="button action omniva-btn-generate_labels"><?php echo esc_html($title); ?></button>
+            <?php
+            $output = ob_get_clean();
+
+            return $output;
         }
 
     }
