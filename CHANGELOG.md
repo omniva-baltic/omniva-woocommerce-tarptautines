@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0]
 ### Added
 - Added the option to select the price of the carrier to get with or without VAT
 - Added additional service: Insurance
