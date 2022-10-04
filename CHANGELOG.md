@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0]
+### Added
+- Added the option to select the price of the carrier to get with or without VAT
+- Added additional service: Insurance
+- Mass action buttons in Omniva orders page
+
+### Fixed
+- Fixed carrier name showing in Omniva orders table
+
 ## [1.0.12]
 ### Updated
 - Reworked method display settings

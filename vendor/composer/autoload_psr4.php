@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'setasign\\Fpdi\\' => array($vendorDir . '/setasign/fpdi/src'),
     'OmnivaTarptautinesWoo\\' => array($baseDir . '/classes'),
     'OmnivaApi\\' => array($vendorDir . '/omniva/api-lib/src'),
 );

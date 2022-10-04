@@ -263,7 +263,7 @@
   display: block;
 }
 
-.omniva-table {
+.omniva_global .omniva-table {
   border-collapse: separate;
   border-spacing: 0 2px 0 0;
   margin-bottom: 5px;
@@ -271,11 +271,11 @@
   background-color: #fff;
 }
 
-.wp-list-table .fixed-width {
+.omniva_global .wp-list-table .fixed-width {
   width: 48px !important;
 }
 
-.omniva-filter input:not([type="checkbox"]) {
+.omniva_global .omniva-filter input:not([type="checkbox"]) {
   height: 28px;
   border-radius: 3px;
   width: 100%;
@@ -283,11 +283,11 @@
   padding: 3px 6px;
 }
 
-.omniva-filter {
+.omniva_global .omniva-filter {
   background-color: rgba(240, 78, 35, 0.5);
 }
 
-.omniva-filter .datetimepicker {
+.omniva_global .omniva-filter .datetimepicker {
   display: flex;
   flex-wrap: wrap;
   border: 1px solid rgb(221, 221, 221);
@@ -295,13 +295,13 @@
   overflow: hidden;
 }
 
-.omniva-filter .datetimepicker div {
+.omniva_global .omniva-filter .datetimepicker div {
   line-height: initial;
   position: relative;
   width: 100%;
 }
 
-.omniva-filter .datetimepicker input {
+.omniva_global .omniva-filter .datetimepicker input {
   min-width: 90px;
   width: 100%;
   background-color: #fff;
@@ -313,6 +313,24 @@
   display: none;
   background-color: #fff;
   border: 1px solid grey;
+}
+
+.page-omniva_manifest .column-barcode {
+  width: 160px;
+}
+
+.page-omniva_manifest .column-carrier img {
+  max-width: 60px;
+  display: block;
+  margin: auto;
+}
+.page-omniva_manifest .column-carrier span {
+  display: block;
+  text-align: center;
+}
+
+.page-omniva_manifest .column-actions button {
+  width: 100%;
 }
 
 @media only screen and (min-width: 1600px) {
