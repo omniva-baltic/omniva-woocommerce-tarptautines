@@ -192,9 +192,10 @@ class Core {
         $items = [];
         $order_items = $order->get_items();
         foreach ($order_items as $id => $data) {
+            $item_name = mb_convert_encoding($data->get_name(), 'HTML-ENTITIES', 'UTF-8');
             $item = new Item();
             $item->setItemAmount($data->get_quantity());
-            $item->setDescription(substr($data->get_name(),0,39));
+            $item->setDescription(substr($item_name,0,39));
             $item->setItemPrice($data->get_total() / $data->get_quantity());
             $item->setCountryId($this->get_country_id($config['shop_countrycode']));
             $items[] = $item->generateItem();

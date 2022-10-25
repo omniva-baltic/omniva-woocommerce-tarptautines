@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - Fixed postcode when delivery address is in United Arab Emirates
+- Fixed items generation, when product name have HTML characters
 
 ## [1.1.0]
 ### Added
