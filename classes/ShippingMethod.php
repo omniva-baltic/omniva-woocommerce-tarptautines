@@ -215,6 +215,17 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 'type' => 'checkbox',
                 'default' => 'no',
             );
+
+            $fields['add_delivery_time'] = array(
+                'title' => __('Add to delivery time', 'omniva_global'),
+                'description' => __('Add additional time in days to the delivery time shown to the customer', 'omniva_global'),
+                'type' => 'number',
+                'default' => 0,
+                'custom_attributes' => array(
+                    'step' => 1,
+                    'min' => 0
+                )
+            );
             
             $services = $this->api->get_services();
             if (is_array($services)) {
@@ -543,7 +554,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
             $service_key = $this->get_field_key( $key );
             $title = ($value['label'] ?? "");
             $html = '<tr valign="top"><th class="service-group-title">' . ucfirst($title) . '</th><td>';
-            $html .= '<label for="' . $service_key . '"><input type="checkbox" name="' . $service_key . '" id="' . $service_key . '" style="" value="yes" ' . ( $this->get_option( $key ) == 'yes' ? 'checked' : '' ) . '>' . __('Enable', 'omniva-global') . '</label>';
+            $html .= '<label for="' . $service_key . '"><input type="checkbox" name="' . $service_key . '" id="' . $service_key . '" style="" value="yes" ' . ( $this->get_option( $key ) == 'yes' ? 'checked' : '' ) . '>' . __('Enable', 'omniva_global') . '</label>';
             $html .= '</td></tr>';
             return $html;
         }
@@ -638,10 +649,14 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                         }
                         $group = $offer->group;
                         $courier_title = $config[$group .'_title'] ?? 'Courier';
+                        $delivery_time = $this->get_delivery_time($offer->delivery_time);
+                        if (!empty($delivery_time)) {
+                            $delivery_time = ' (' . $delivery_time . ')';
+                        }
                         $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_service_' . $offer->service_code,
-                            'label' => $courier_title . ' (' . $offer->delivery_time . ')',
+                            'label' => $courier_title . $delivery_time,
                             'cost' => $free_shipping ? 0 : $offer->price
                         );
                         $this->add_rate($rate);
@@ -672,6 +687,31 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 //}
             } catch (\Exception $e) {
             }
+        }
+
+        private function get_delivery_time($delivery_time)
+        {
+            $config = $this->core->get_config();
+
+            if (empty($delivery_time)) {
+                return '';
+            }
+
+            if (strpos($delivery_time, '-') === false) {
+                return $delivery_time;
+            }
+
+            $days = explode('-', $delivery_time);
+            $day_from = preg_replace("/[^0-9]/", "", $days[0]);
+            $day_to = preg_replace("/[^0-9]/", "", $days[1]);
+
+            if (!empty($config['add_delivery_time'])) {
+                $day_from += (int)$config['add_delivery_time'];
+                $day_to += (int)$config['add_delivery_time'];
+            }
+
+            return sprintf('%d-%d d.d.', $day_from, $day_to);
+            //return sprintf(_x('%d-%d days', 'Shipping time', 'omniva_global'), $day_from, $day_to); //Not working
         }
 
         public function process_admin_options()

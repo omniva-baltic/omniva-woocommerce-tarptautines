@@ -33,6 +33,7 @@ class Main {
 
     private function init() {
         add_action('woocommerce_shipping_init', array($this, 'shipping_method_init'));
+        add_action('init', array($this, 'load_textdomain'));
         add_filter('woocommerce_shipping_methods', array($this, 'add_shipping_method'));
         add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'front_scripts'), 99);
@@ -48,6 +49,10 @@ class Main {
         if (get_option(Helper::get_prefix() . '_services_updated', 0) == 1) {
             add_action('admin_notices', array($this, 'updated_services_notice'));
         }
+    }
+
+    public function load_textdomain() {
+        load_plugin_textdomain('omniva_global', false, OMNIVA_GLOBAL_PLUGIN_DIR . '/languages' );
     }
 
     public function front_scripts() {
