@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Added a ability to add additional days to delivery time
+- Added a ability to translate plugin
 
 ### Fixed
 - Fixed postcode when delivery address is in United Arab Emirates
