@@ -4,6 +4,7 @@
 ### Added
 - Added a ability to add additional days to delivery time
 - Added a ability to translate plugin
+- Added a ability to set item price in shipment, when item is free in order
 
 ### Fixed
 - Fixed postcode when delivery address is in United Arab Emirates
