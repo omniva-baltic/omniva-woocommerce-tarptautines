@@ -66,6 +66,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
         {
             $countries_options = $this->get_countries_options();
             $currency = get_woocommerce_currency();
+            $currency_symbol = get_woocommerce_currency_symbol();
             $fields = array(
                 'main_logo' => array(
                     'type' => 'logo'
@@ -495,6 +496,21 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                     'min' => 0
                 ),
                 'default' => 2
+            );
+
+            $fields['hr_advanced'] = array(
+                'type' => 'hr'
+            );
+
+            $fields['free_items_price'] = array(
+                'title' => __('Free items price', 'omniva_global'),
+                'type' => 'number',
+                'description' => sprintf(__('Some carriers do not allow the shipment to be registered if it contains items with a price of %1$s. In this setting, you can specify what price will be used when registering the shipment when the price of the item in the order is %1$s.', 'omniva_global'), '0 ' . $currency_symbol),
+                'custom_attributes' => array(
+                    'step' => 0.01,
+                    'min' => 0.01
+                ),
+                'default' => ''
             );
 
             $fields['refresh_terminals'] = array(

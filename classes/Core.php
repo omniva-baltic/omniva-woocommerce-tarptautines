@@ -196,11 +196,22 @@ class Core {
             $item = new Item();
             $item->setItemAmount($data->get_quantity());
             $item->setDescription(substr($item_name,0,39));
-            $item->setItemPrice($data->get_total() / $data->get_quantity());
+            $item->setItemPrice($this->get_item_price($data));
             $item->setCountryId($this->get_country_id($config['shop_countrycode']));
             $items[] = $item->generateItem();
         }
         return $items;
+    }
+
+    private function get_item_price($item_data) {
+        $config = $this->get_config();
+
+        $price = $item_data->get_total() / $item_data->get_quantity();
+        if (empty($price) && ! empty($config['free_items_price']) ) {
+            $price = (float)$config['free_items_price'];
+        }
+
+        return $price;
     }
 
     public function get_offers($package) {
