@@ -776,7 +776,7 @@ class Core {
     }
 
     public function get_temp_dir() {
-        $temp_dir = OMNIVA_GLOBAL_PLUGIN_DIR . 'var/temp';
+        $temp_dir = OMNIVALT_GLOBAL_PLUGIN_DIR . 'var/temp';
         if (!is_dir($temp_dir)) {
             mkdir($temp_dir, 0755, true);
         }

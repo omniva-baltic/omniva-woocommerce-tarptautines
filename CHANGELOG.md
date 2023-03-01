@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.1]
 ### Added
 - Added a ability to add additional days to delivery time
 - Added a ability to translate plugin
