@@ -5,5 +5,6 @@
 - Plugins: WooCommerce 4.0
 
 ## Download and install
+Click the button below to download the plugin installation file and upload the downloaded file through the "Plugins" > "Add new" > "Upload Plugin" in the Wordpress administration.
 
-To download the plugin, please go to "Releases" by pressing link in right column or directly download the newest version by pressing <a href="https://github.com/omniva-baltic/omniva-woocommerce-tarptautines/releases/latest/download/omniva-tarptautines-woo.zip" title="Newest plugin release">here</a>.
+[![Download](https://img.shields.io/badge/dynamic/json.svg?label=download&url=https://api.github.com/repos/omniva-baltic/omniva-woocommerce-tarptautines/releases/latest&query=$.assets[0].name&style=for-the-badge)](https://github.com/omniva-baltic/omniva-woocommerce-tarptautines/releases/latest/download/omniva-tarptautines-woo.zip)

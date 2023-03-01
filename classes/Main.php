@@ -33,6 +33,7 @@ class Main {
 
     private function init() {
         add_action('woocommerce_shipping_init', array($this, 'shipping_method_init'));
+        add_action('init', array($this, 'load_textdomain'));
         add_filter('woocommerce_shipping_methods', array($this, 'add_shipping_method'));
         add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'front_scripts'), 99);
@@ -43,21 +44,25 @@ class Main {
         add_action('woocommerce_checkout_process', array($this, 'omniva_terminal_validate'));
         add_action( 'wp_ajax_omniva_terminals_sync', array($this, 'omniva_update_terminals'));
         add_action( 'wp_ajax_omniva_services_sync', array($this, 'omniva_update_services'));
-        add_filter('plugin_action_links_' . OMNIVA_GLOBAL_BASENAME, array($this, 'settings_link'));
+        add_filter('plugin_action_links_' . OMNIVALT_GLOBAL_BASENAME, array($this, 'settings_link'));
 
         if (get_option(Helper::get_prefix() . '_services_updated', 0) == 1) {
             add_action('admin_notices', array($this, 'updated_services_notice'));
         }
     }
 
+    public function load_textdomain() {
+        load_plugin_textdomain('omniva_global', false, OMNIVALT_GLOBAL_PLUGIN_DIR . '/languages' );
+    }
+
     public function front_scripts() {
         if (is_checkout() && ! is_wc_endpoint_url()) {
 
-            wp_enqueue_script('omniva-global-helper', plugin_dir_url(__DIR__) . 'assets/js/omniva_helper.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
-            wp_enqueue_script('omniva-global', plugin_dir_url(__DIR__) . 'assets/js/omniva.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
-            wp_enqueue_script('omniva-terminal', plugin_dir_url(__DIR__) . 'assets/js/terminal.js', array('jquery'), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-global-helper', plugin_dir_url(__DIR__) . 'assets/js/omniva_helper.js', array('jquery'), OMNIVALT_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-global', plugin_dir_url(__DIR__) . 'assets/js/omniva.js', array('jquery'), OMNIVALT_GLOBAL_VERSION);
+            wp_enqueue_script('omniva-terminal', plugin_dir_url(__DIR__) . 'assets/js/terminal.js', array('jquery'), OMNIVALT_GLOBAL_VERSION);
 
-            wp_enqueue_style('omniva-global', plugin_dir_url(__DIR__) . 'assets/css/terminal-mapping.css', array(), OMNIVA_GLOBAL_VERSION);
+            wp_enqueue_style('omniva-global', plugin_dir_url(__DIR__) . 'assets/css/terminal-mapping.css', array(), OMNIVALT_GLOBAL_VERSION);
 
             //wp_enqueue_script('leaflet', plugin_dir_url(__DIR__) . 'assets/js/leaflet.js', array('jquery'), null, true);
             //wp_enqueue_style('leaflet', plugin_dir_url(__DIR__) . 'assets/css/leaflet.css');
@@ -82,10 +87,10 @@ class Main {
     }
 
     public function admin_scripts() {
-        wp_register_style('omniva_global_admin_style', plugin_dir_url(__DIR__) . 'assets/css/admin.css', false, OMNIVA_GLOBAL_VERSION);
+        wp_register_style('omniva_global_admin_style', plugin_dir_url(__DIR__) . 'assets/css/admin.css', false, OMNIVALT_GLOBAL_VERSION);
         wp_enqueue_style('omniva_global_admin_style');
 
-        wp_register_script('omniva_global_settings_js', plugin_dir_url(__DIR__) . 'assets/js/settings.js', array('jquery'), OMNIVA_GLOBAL_VERSION, true);
+        wp_register_script('omniva_global_settings_js', plugin_dir_url(__DIR__) . 'assets/js/settings.js', array('jquery'), OMNIVALT_GLOBAL_VERSION, true);
         wp_enqueue_script('omniva_global_settings_js');
         
         wp_localize_script('omniva_global_settings_js', 'omnivadata', array(
@@ -94,7 +99,7 @@ class Main {
 
         $current_page = get_current_screen()->base;
         if ($current_page == 'post') {
-            wp_register_script('omniva_global_order_js', plugin_dir_url(__DIR__) . 'assets/js/order.js', array('jquery', 'select2'), OMNIVA_GLOBAL_VERSION, true);
+            wp_register_script('omniva_global_order_js', plugin_dir_url(__DIR__) . 'assets/js/order.js', array('jquery', 'select2'), OMNIVALT_GLOBAL_VERSION, true);
             wp_enqueue_script('omniva_global_order_js');
         }
     }
@@ -240,7 +245,7 @@ class Main {
 
           require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
           dbDelta( $sql );
-          add_option( $db_table_name, OMNIVA_GLOBAL_VERSION );
+          add_option( $db_table_name, OMNIVALT_GLOBAL_VERSION );
         }
     } 
 

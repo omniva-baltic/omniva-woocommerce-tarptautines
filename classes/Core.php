@@ -192,14 +192,26 @@ class Core {
         $items = [];
         $order_items = $order->get_items();
         foreach ($order_items as $id => $data) {
+            $item_name = mb_convert_encoding($data->get_name(), 'HTML-ENTITIES', 'UTF-8');
             $item = new Item();
             $item->setItemAmount($data->get_quantity());
-            $item->setDescription(substr($data->get_name(),0,39));
-            $item->setItemPrice($data->get_total() / $data->get_quantity());
+            $item->setDescription(substr($item_name,0,39));
+            $item->setItemPrice($this->get_item_price($data));
             $item->setCountryId($this->get_country_id($config['shop_countrycode']));
             $items[] = $item->generateItem();
         }
         return $items;
+    }
+
+    private function get_item_price($item_data) {
+        $config = $this->get_config();
+
+        $price = $item_data->get_total() / $item_data->get_quantity();
+        if (empty($price) && ! empty($config['free_items_price']) ) {
+            $price = (float)$config['free_items_price'];
+        }
+
+        return $price;
     }
 
     public function get_offers($package) {
@@ -764,7 +776,7 @@ class Core {
     }
 
     public function get_temp_dir() {
-        $temp_dir = OMNIVA_GLOBAL_PLUGIN_DIR . 'var/temp';
+        $temp_dir = OMNIVALT_GLOBAL_PLUGIN_DIR . 'var/temp';
         if (!is_dir($temp_dir)) {
             mkdir($temp_dir, 0755, true);
         }

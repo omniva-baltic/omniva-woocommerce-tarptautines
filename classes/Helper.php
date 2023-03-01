@@ -113,13 +113,12 @@ class Helper {
     }
 
     static function clear_postcode($postcode, $country) {
-        return $postcode; //This function is not needed yet
-        
-        if ($country == 'LV') {
-            //It is not clear if it will be needed
+        if ($country == 'AE' && empty($postcode)) {
+            return '00000';
         }
 
-        return preg_replace('/[^0-9]/', '', $postcode);
+        return $postcode;
+        //return preg_replace('/[^0-9]/', '', $postcode); //Fix dont needed
     }
 
 }
