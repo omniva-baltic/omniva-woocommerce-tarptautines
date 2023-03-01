@@ -691,10 +691,14 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                             continue;
                         }
                         $terminal_title = $config['terminals_title'] ?? 'Parcel terminal';
+                        $delivery_time = $this->get_delivery_time($offer->delivery_time);
+                        if (!empty($delivery_time)) {
+                            $delivery_time = ' (' . $delivery_time . ')';
+                        }
                         $free_shipping = $this->core->is_free_shipping($offer->group);
                         $rate = array(
                             'id' => $this->id . '_terminal_' . $this->core->get_offer_terminal_type($offer) . '_service_' . $offer->service_code,
-                            'label' => $terminal_title . ' (' . $offer->delivery_time . ')',
+                            'label' => $terminal_title . $delivery_time,
                             'cost' => $free_shipping ? 0 : $offer->price
                         );
                         $this->add_rate($rate);
