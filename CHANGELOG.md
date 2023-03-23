@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed offer price getting, when got unknown value from the settings
+
 ## [1.1.1]
 ### Added
 - Added a ability to add additional days to delivery time
