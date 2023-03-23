@@ -278,7 +278,7 @@ class Core {
                 $price = $offer->total_price_with_vat;
                 break;
             default:
-                $price = $offer->price;
+                $price = $offer->total_price_excl_vat;
         }
 
         return $price;
