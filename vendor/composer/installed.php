@@ -22,7 +22,7 @@
         'omniva/api-lib' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '23e274fce80f77e2b8aaa6c7d1f1bacbcfafdcd1',
+            'reference' => 'a1d5a78ce38fc5f799f933797d770a2c4ab1af12',
             'type' => 'library',
             'install_path' => __DIR__ . '/../omniva/api-lib',
             'aliases' => array(
@@ -31,18 +31,18 @@
             'dev_requirement' => false,
         ),
         'setasign/fpdf' => array(
-            'pretty_version' => '1.8.4',
-            'version' => '1.8.4.0',
-            'reference' => 'b0ddd9c5b98ced8230ef38534f6f3c17308a7974',
+            'pretty_version' => '1.8.2',
+            'version' => '1.8.2.0',
+            'reference' => 'd77904018090c17dc9f3ab6e944679a7a47e710a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../setasign/fpdf',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'setasign/fpdi' => array(
-            'pretty_version' => 'v2.3.6',
-            'version' => '2.3.6.0',
-            'reference' => '6231e315f73e4f62d72b73f3d6d78ff0eed93c31',
+            'pretty_version' => 'v2.3.7',
+            'version' => '2.3.7.0',
+            'reference' => 'bccc892d5fa1f48c43f8ba7db5ed4ba6f30c8c05',
             'type' => 'library',
             'install_path' => __DIR__ . '/../setasign/fpdi',
             'aliases' => array(),

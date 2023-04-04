@@ -10,7 +10,7 @@ class API
     protected $url = "https://tarptautines.omniva.lt/api/v1/";
     protected $token;
     private $debug_mode;
-    private $timeout = 5;
+    private $timeout = 30;
 
     public function __construct($token = false, $test_mode = false, $api_debug_mode = false)
     {
