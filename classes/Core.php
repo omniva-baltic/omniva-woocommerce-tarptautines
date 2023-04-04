@@ -196,6 +196,7 @@ class Core {
             $item = new Item();
             $item->setItemAmount($data->get_quantity());
             $item->setDescription(substr($item_name,0,39));
+            $item->setAllowFree(true);
             $item->setItemPrice($this->get_item_price($data));
             $item->setCountryId($this->get_country_id($config['shop_countrycode']));
             $items[] = $item->generateItem();
@@ -278,7 +279,7 @@ class Core {
                 $price = $offer->total_price_with_vat;
                 break;
             default:
-                $price = $offer->price;
+                $price = $offer->total_price_excl_vat;
         }
 
         return $price;

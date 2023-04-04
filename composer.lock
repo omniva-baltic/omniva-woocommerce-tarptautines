@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:mijora/omniva-api.git",
-                "reference": "23e274fce80f77e2b8aaa6c7d1f1bacbcfafdcd1"
+                "reference": "a1d5a78ce38fc5f799f933797d770a2c4ab1af12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mijora/omniva-api/zipball/23e274fce80f77e2b8aaa6c7d1f1bacbcfafdcd1",
-                "reference": "23e274fce80f77e2b8aaa6c7d1f1bacbcfafdcd1",
+                "url": "https://api.github.com/repos/mijora/omniva-api/zipball/a1d5a78ce38fc5f799f933797d770a2c4ab1af12",
+                "reference": "a1d5a78ce38fc5f799f933797d770a2c4ab1af12",
                 "shasum": ""
             },
             "require": {
@@ -39,25 +39,21 @@
                 "source": "https://github.com/mijora/omniva-api/tree/master",
                 "issues": "https://github.com/mijora/omniva-api/issues"
             },
-            "time": "2022-09-12T10:37:36+00:00"
+            "time": "2023-04-03T09:02:43+00:00"
         },
         {
             "name": "setasign/fpdf",
-            "version": "1.8.4",
+            "version": "1.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Setasign/FPDF.git",
-                "reference": "b0ddd9c5b98ced8230ef38534f6f3c17308a7974"
+                "reference": "d77904018090c17dc9f3ab6e944679a7a47e710a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Setasign/FPDF/zipball/b0ddd9c5b98ced8230ef38534f6f3c17308a7974",
-                "reference": "b0ddd9c5b98ced8230ef38534f6f3c17308a7974",
+                "url": "https://api.github.com/repos/Setasign/FPDF/zipball/d77904018090c17dc9f3ab6e944679a7a47e710a",
+                "reference": "d77904018090c17dc9f3ab6e944679a7a47e710a",
                 "shasum": ""
-            },
-            "require": {
-                "ext-gd": "*",
-                "ext-zlib": "*"
             },
             "type": "library",
             "autoload": {
@@ -83,22 +79,22 @@
                 "pdf"
             ],
             "support": {
-                "source": "https://github.com/Setasign/FPDF/tree/1.8.4"
+                "source": "https://github.com/Setasign/FPDF/tree/1.8.2"
             },
-            "time": "2021-08-30T07:50:06+00:00"
+            "time": "2019-12-08T10:32:10+00:00"
         },
         {
             "name": "setasign/fpdi",
-            "version": "v2.3.6",
+            "version": "v2.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Setasign/FPDI.git",
-                "reference": "6231e315f73e4f62d72b73f3d6d78ff0eed93c31"
+                "reference": "bccc892d5fa1f48c43f8ba7db5ed4ba6f30c8c05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Setasign/FPDI/zipball/6231e315f73e4f62d72b73f3d6d78ff0eed93c31",
-                "reference": "6231e315f73e4f62d72b73f3d6d78ff0eed93c31",
+                "url": "https://api.github.com/repos/Setasign/FPDI/zipball/bccc892d5fa1f48c43f8ba7db5ed4ba6f30c8c05",
+                "reference": "bccc892d5fa1f48c43f8ba7db5ed4ba6f30c8c05",
                 "shasum": ""
             },
             "require": {
@@ -149,7 +145,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Setasign/FPDI/issues",
-                "source": "https://github.com/Setasign/FPDI/tree/v2.3.6"
+                "source": "https://github.com/Setasign/FPDI/tree/v2.3.7"
             },
             "funding": [
                 {
@@ -157,7 +153,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-02-11T11:37:01+00:00"
+            "time": "2023-02-09T10:38:43+00:00"
         }
     ],
     "packages-dev": [],
