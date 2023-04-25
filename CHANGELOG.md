@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3]
+### Fixed
+- Fixed step param value for fields in category edit
+
+### Updated
+- Updated Omniva API lib
+
 ## [1.1.2]
 ### Fixed
 - Fixed offer price getting, when got unknown value from the settings
