@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:mijora/omniva-api.git",
-                "reference": "a1d5a78ce38fc5f799f933797d770a2c4ab1af12"
+                "reference": "3965f82ee86a5a1841eb221220a6a14f164b9302"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mijora/omniva-api/zipball/a1d5a78ce38fc5f799f933797d770a2c4ab1af12",
-                "reference": "a1d5a78ce38fc5f799f933797d770a2c4ab1af12",
+                "url": "https://api.github.com/repos/mijora/omniva-api/zipball/3965f82ee86a5a1841eb221220a6a14f164b9302",
+                "reference": "3965f82ee86a5a1841eb221220a6a14f164b9302",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,7 @@
                 "source": "https://github.com/mijora/omniva-api/tree/master",
                 "issues": "https://github.com/mijora/omniva-api/issues"
             },
-            "time": "2023-04-03T09:02:43+00:00"
+            "time": "2023-04-25T13:10:05+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -166,5 +166,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }
