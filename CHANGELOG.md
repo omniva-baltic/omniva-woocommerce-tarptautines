@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.3]
 ### Fixed
 - Fixed step param value for fields in category edit
 
