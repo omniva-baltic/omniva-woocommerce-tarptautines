@@ -23,6 +23,11 @@ class Api {
     }
     
     public function get_services($force = false){
+        $output = array(
+            'status' => 'OK',
+            'msg' => '',
+            'data' => array(),
+        );
         $token = Helper::get_config_value('api_token', $this->config, false);
         if (!$token) {
             return [];
@@ -39,11 +44,12 @@ class Api {
                 }
                 update_option(Helper::get_prefix() . '_total_services', count($data));
             }
+            $output['data'] = $data;
         } catch (\Exception $e) {
-            echo $e->getMessage();
-            $data = [];
+            $output['status'] = 'error';
+            $output['msg'] = $e->getMessage();
         }
-        return $data;
+        return $output;
     }
     
     public function get_countries(){

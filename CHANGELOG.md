@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed error messages show for some API functions
+
 ## [1.1.3]
 ### Fixed
 - Fixed step param value for fields in category edit
