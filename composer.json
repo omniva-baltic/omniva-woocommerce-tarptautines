@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "omniva/api-lib" : "^1.0.0",
+        "omniva/api-lib" : "dev-master",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.3"
     },
