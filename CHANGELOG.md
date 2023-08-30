@@ -3,6 +3,10 @@
 ## [Unreleased]
 ### Fixed
 - Fixed error messages show for some API functions
+- Added terminal ID when registering a shipment
+
+### Updated
+- Updated Omniva API lib
 
 ## [1.1.3]
 ### Fixed
