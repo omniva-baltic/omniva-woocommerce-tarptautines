@@ -121,4 +121,13 @@ class Helper {
         //return preg_replace('/[^0-9]/', '', $postcode); //Fix dont needed
     }
 
+    static function add_unique_to_array(&$array, $value) {
+        if ( ! in_array($value, $array) ) {
+            $array[] = $value;
+        }
+    }
+
+    static function omniva_notice_html($msg, $msg_type = 'notice') {
+        return '<div class="omniva-notice omniva-notice-' . $msg_type . '"><p>' . $msg . '</p></div>';
+    }
 }

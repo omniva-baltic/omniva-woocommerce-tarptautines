@@ -272,9 +272,9 @@ class Main {
     }
  
     public function omniva_update_services() {
-        $this->api->get_services(true);
+        $result = $this->api->get_services(true);
         $array_result = array(
-            'message' => 'Updated'
+            'message' => ($result['status'] == 'OK') ? 'Updated' : 'Failed to update',
         );
 
         wp_send_json($array_result);

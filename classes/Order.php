@@ -36,11 +36,28 @@ class Order {
         $identifier = get_post_meta($post->ID, '_omniva_global_identifier', true);
         $receiver_country = get_post_meta( $post->ID, '_shipping_country', true );
         $carrier_code = get_post_meta($post->ID, '_omniva_global_service', true);
-        $carrier = $this->core->get_service_info($carrier_code);
-        $available_services = $this->core->get_additional_services($carrier_code);
+        $errors = [];
+        try {
+            $carrier = $this->core->get_service_info($carrier_code);
+        } catch(\Exception $e) {
+            Helper::add_unique_to_array($errors, $e->getMessage());
+            $carrier = false;
+        }
+        try {
+            $available_services = $this->core->get_additional_services($carrier_code);
+        } catch(\Exception $e) {
+            Helper::add_unique_to_array($errors, $e->getMessage());
+            $available_services = [];
+        }
         ?>
         <img src = "<?php echo plugin_dir_url(__DIR__); ?>assets/images/logo.svg" style="width: 100px;"/>
-        <div class ="errors"></div>
+        <div class="errors">
+            <?php if ( ! empty($errors) ) : ?>
+                <?php foreach ( $errors as $error ) : ?>
+                    <?php echo Helper::omniva_notice_html($error, 'error'); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
         <p>
             <?php $this->build_title(__("Carrier", 'omniva_global')); ?> <?php echo $carrier->name ?? '-'; ?>
         </p>

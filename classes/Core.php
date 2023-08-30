@@ -385,8 +385,17 @@ class Core {
         $offers = $edited_offers;
     }
 
+    public function get_services($throw_error = true) {
+        $result = $this->api->get_services();
+        if ( $throw_error && isset($result['status']) && $result['status'] == 'error' ) {
+            throw new \Exception($result['msg']);
+        }
+        
+        return $result['data'] ?? array();
+    }
+
     public function get_offer_terminal_type($offer) {
-        $services = $this->api->get_services();
+        $services = $this->get_services(false);
         foreach ($services as $service) {
             if ($offer->service_code == $service->service_code) {
                 if (isset($service->parcel_terminal_type)) {
@@ -417,7 +426,7 @@ class Core {
     }
 
     public function is_offer_terminal($offer) {
-        $services = $this->api->get_services();
+        $services = $this->get_services(false);
         foreach ($services as $service) {
             if ($offer->service_code == $service->service_code) {
                 if ($service->delivery_to_address == false) {
@@ -454,7 +463,7 @@ class Core {
     }
 
     public function get_additional_services($service_code) {
-        $services = $this->api->get_services();
+        $services = $this->get_services();
         $allowed_services = [];
         foreach ($services as $service) {
             if ($service->service_code == $service_code) {
@@ -483,7 +492,7 @@ class Core {
     }
     
     public function is_own_login_ok($offer) {
-        $services = $this->api->get_services();
+        $services = $this->get_services(false);
         foreach ($services as $service) {
             if ($service->service_code == $offer->service_code) {
                 if (isset($service->additional_services)) {
@@ -528,9 +537,8 @@ class Core {
 
     public function get_service_info($service_code, $services = false) {
         if (!$services) {
-            $services = $this->api->get_services();
+            $services = $this->get_services();
         }
-
         foreach ($services as $service) {
             if ($service->service_code == $service_code) {
                 return $service;
