@@ -509,7 +509,7 @@ class Manifest {
             }
 
             $order_statuses = wc_get_order_statuses();
-            $carriers = $this->api->get_services();
+            $carriers = $this->core->get_services(false);
             ?>
             <ul class="nav nav-tabs">
                 <?php foreach ($this->tab_strings as $tab => $tab_title) : ?>

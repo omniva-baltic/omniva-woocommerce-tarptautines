@@ -228,7 +228,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
                 )
             );
             
-            $services = $this->api->get_services();
+            $services = $this->core->get_services(false);
             if (is_array($services)) {
                 $service_groups = [];
                 foreach ($services as $service) {

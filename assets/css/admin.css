@@ -6,17 +6,28 @@
     color: #FFFFFF;
     border-color: #dc3232;
 }
-.omniva-notice-error {
+.omniva-notice {
     background: #fff;
     border: 1px solid #ccd0d4;
     border-left-width: 4px;
     box-shadow: 0 1px 1px rgb(0 0 0 / 4%);
     padding: 1px 8px;
-    border-left-color: #dc3232;
+    border-left-color: #999;
+    margin-bottom: 5px;
 }
-.omniva-notice-error p {
+.omniva-notice:last-child {
+    margin-bottom: 0;
+}
+.omniva-notice p {
     margin: 0.3em 0;
     padding: 2px;
+}
+.omniva-notice-error {
+    border-left-color: #dc3232;
+}
+
+.postbox .errors {
+    margin-top: 10px;
 }
 
 .omniva-loader-container {
