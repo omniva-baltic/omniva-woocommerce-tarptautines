@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.4]
 ### Fixed
 - Fixed error messages show for some API functions
 - Added terminal ID when registering a shipment
