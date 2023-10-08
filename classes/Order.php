@@ -113,7 +113,8 @@ class Order {
                 <?php $this->render_services($available_services, $post); ?>
                 
             <?php endif; ?>    
-            <?php $this->render_hs(); ?>    
+            <?php $this->render_hs(); ?>
+            <?php $this->render_eori(); ?>
             <div class = "omniva-row">
                 <button type="button" value="create" id="omniva_global_create" name="omniva_global_create" class="button button-primary"><?php _e('Create', 'omniva_global'); ?></button>
             </div>
