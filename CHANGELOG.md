@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.5]
+### Added
+- Added possibility to specify EORI number
+
 ## [1.1.4]
 ### Fixed
 - Fixed error messages show for some API functions
