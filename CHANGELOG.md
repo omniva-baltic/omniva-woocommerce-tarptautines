@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Added new library for calculation of minimum box size
+
+### Improved
+- Optimized vendor libraries for smoother performance
+
 ## [1.1.5]
 ### Added
 - Added possibility to specify EORI number
