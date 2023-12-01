@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Added new library for calculation of minimum box size
+
+### Improved
+- Optimized vendor libraries for smoother performance
+
+### Fixed
+- Fixed shipment size calculation using Consolidare function
+
 ## [1.1.5]
 ### Added
 - Added possibility to specify EORI number

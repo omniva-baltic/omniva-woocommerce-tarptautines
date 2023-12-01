@@ -9,4 +9,5 @@ return array(
     'setasign\\Fpdi\\' => array($vendorDir . '/setasign/fpdi/src'),
     'OmnivaTarptautinesWoo\\' => array($baseDir . '/classes'),
     'OmnivaApi\\' => array($vendorDir . '/omniva/api-lib/src'),
+    'Mijora\\MinBoxCalculator\\' => array($vendorDir . '/mijora/min-box-calculator/src'),
 );

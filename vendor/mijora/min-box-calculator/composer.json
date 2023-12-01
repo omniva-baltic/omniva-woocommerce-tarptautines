@@ -1,0 +1,23 @@
+{
+    "name": "mijora/min-box-calculator",
+    "description": "Calculates the smallest box size required to contain the items",
+    "type": "library",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Marijus K.",
+            "email": "info@markak.lt",
+            "role": "Developer"
+        },
+        {
+            "name": "UAB Mijora",
+            "email": "info@mijora.lt",
+            "homepage": "https://mijora.dev"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Mijora\\MinBoxCalculator\\": "src/"
+        }
+    }
+}

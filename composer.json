@@ -15,12 +15,17 @@
     "require": {
         "omniva/api-lib" : "dev-master",
         "setasign/fpdf": "^1.8",
-        "setasign/fpdi": "^2.3"
+        "setasign/fpdi": "^2.3",
+        "mijora/min-box-calculator" : "^0.1"
     },
     "repositories": [
         {
             "type" : "vcs",
             "url" : "git@github.com:mijora/omniva-api.git"
+        },
+        {
+            "type" : "vcs",
+            "url" : "git@github.com:mijora/min-box-calculator.git"
         }
     ]
 }
