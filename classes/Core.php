@@ -12,6 +12,8 @@ use OmnivaApi\Parcel;
 use OmnivaApi\Item;
 use OmnivaApi\Order as ApiOrder;
 use setasign\Fpdi\Fpdi;
+use Mijora\MinBoxCalculator\Elements\Item as BoxItem;
+use Mijora\MinBoxCalculator\CalculateBox;
 
 class Core {
 
@@ -165,23 +167,26 @@ class Core {
         if ($send_as_one == 'yes') {
             $main_parcel = new Parcel();
             $total_weight = 0;
-            $total_volume = 0;
             $total_amount = 1;
+            $box_items_list = array();
             foreach ($parcel_objects as $parcel) {
                 try {
                     $parcel_data = $parcel->__toArray();
                     $total_weight += $parcel_data['weight'] * $parcel_data['amount'];
-                    $total_volume += $parcel_data['x'] * $parcel_data['y'] * $parcel_data['z'] * $parcel_data['amount'];
+                    for ( $i = 1; $i <= $parcel_data['amount']; $i++ ) {
+                        $box_items_list[] = new BoxItem($parcel_data['x'], $parcel_data['z'], $parcel_data['y']);
+                    }
                 } catch (\Throwable $e) {
-
                 }
             }
-            $cube_size = ceil($total_volume**(1/3));
+            $box_calculator = new CalculateBox($box_items_list);
+            $min_box_size = $box_calculator->findMinBoxSize();
             $main_parcel->setAmount(1);
             $main_parcel->setUnitWeight($total_weight);
-            $main_parcel->setHeight($cube_size);
-            $main_parcel->setWidth($cube_size);
-            $main_parcel->setLength($cube_size);
+            $main_parcel->setHeight($min_box_size->getOutsideHeight());
+            $main_parcel->setWidth($min_box_size->getOutsideWidth());
+            $main_parcel->setLength($min_box_size->getOutsideLength());
+
             return [$main_parcel->generateParcel()];
         }
         return $parcels;
