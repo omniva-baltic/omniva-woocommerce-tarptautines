@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Omniva International Shipping
- * Version: 1.1.5
+ * Version: 1.1.6
  * Plugin URI: https://github.com/omniva-baltic/omniva-woocommerce-tarptautines
  * Description: Official Omniva plugin that combine shipping between different countries
  * Author: Mijora
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-define('OMNIVALT_GLOBAL_VERSION', '1.1.5');
+define('OMNIVALT_GLOBAL_VERSION', '1.1.6');
 define('OMNIVALT_GLOBAL_BASENAME', plugin_basename(__FILE__));
 define('OMNIVALT_GLOBAL_PLUGIN_DIR', plugin_dir_path( __FILE__ ));
 
