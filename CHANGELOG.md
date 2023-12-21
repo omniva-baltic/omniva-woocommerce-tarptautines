@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed get of default measurements
+
 ## [1.1.6]
 ### Added
 - Added new library for calculation of minimum box size

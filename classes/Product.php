@@ -72,9 +72,9 @@ class Product {
             }
         }
         foreach (array_reverse($terms) as $term){
-            $param = get_term_meta($term->term_id, 'og_default_' . $param, true);
-            if ($param) {
-                return $param;
+            $value = get_term_meta($term->term_id, 'og_default_' . $param, true);
+            if ($value) {
+                return $value;
             }
         }
         return $this->get_param_from_config($param);
