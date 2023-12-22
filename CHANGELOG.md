@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.7]
 ### Fixed
 - Fixed get of default measurements
 
