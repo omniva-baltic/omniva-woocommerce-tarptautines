@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Fixed an error when there are no created categories in the shop
+
 ## [1.1.7]
 ### Fixed
 - Fixed get of default measurements
