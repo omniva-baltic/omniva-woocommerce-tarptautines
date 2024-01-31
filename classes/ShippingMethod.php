@@ -617,6 +617,7 @@ if (!class_exists('\OmnivaTarptautinesWoo\ShippingMethod')) {
         {
             global $woocommerce;
             $config = $this->core->get_config();
+            $cart_categories_ids = array();
             foreach ($woocommerce->cart->get_cart() as $cart_item) {
                 $cats = get_the_terms($cart_item['product_id'], 'product_cat');
                 foreach ($cats as $cat) {
